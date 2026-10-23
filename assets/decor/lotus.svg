@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48" fill="none" stroke="#2f5b3e" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Small lotus on a lily pad. It moves gently by itself (CSS inside the SVG),
+       so it stays "live" wherever it is used, even as a background image. -->
+  <style>
+    .ring  { transform-origin: 32px 40px; animation: ring 3.6s ease-out infinite; }
+    .pad   { animation: float 3s ease-in-out infinite alternate; }
+    .bloom { transform-origin: 32px 38px; animation: sway 4s ease-in-out infinite alternate; }
+    .left  { transform-origin: 32px 38px; animation: open-l 4s ease-in-out infinite alternate; }
+    .right { transform-origin: 32px 38px; animation: open-r 4s ease-in-out infinite alternate; }
+    @keyframes ring   { 0% { transform: scale(0.7); opacity: 0.8; } 100% { transform: scale(1.35); opacity: 0; } }
+    @keyframes float  { from { transform: translateY(-0.6px); } to { transform: translateY(0.8px); } }
+    @keyframes sway   { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+    @keyframes open-l { from { transform: rotate(2deg); } to { transform: rotate(-5deg); } }
+    @keyframes open-r { from { transform: rotate(-2deg); } to { transform: rotate(5deg); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+  <ellipse class="ring" cx="32" cy="40" rx="24" ry="5" stroke="#8ea888" stroke-width="1"/>
+  <g class="pad"><ellipse cx="32" cy="40" rx="24" ry="5" fill="#dfe7d7" stroke="#8ea888" stroke-width="1.5"/></g>
+  <g class="bloom">
+    <path class="left" d="M32 38 C 20 35, 14 26, 13 18 C 23 20, 30 28, 32 38 Z" fill="#ecd3cf" stroke-width="1.8"/>
+    <path class="right" d="M32 38 C 44 35, 50 26, 51 18 C 41 20, 34 28, 32 38 Z" fill="#ecd3cf" stroke-width="1.8"/>
+    <path d="M32 38 C 25 28, 27 16, 32 8 C 37 16, 39 28, 32 38 Z" fill="#ecd3cf" stroke-width="1.8"/>
+  </g>
+</svg>

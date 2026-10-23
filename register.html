@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - JALACHAYA</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/motion.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body data-root="" class="auth-shell">
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+      <nav class="site-nav" id="siteNav">
+        <a href="index.html">Home</a>
+        <a href="index.html#ponds">Ponds</a>
+        <a href="login.html">Log in</a>
+        <a href="register.html" class="btn btn-small active">Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container auth-page">
+    <div class="auth-layout">
+      <aside class="auth-aside">
+        <div class="sketch-slot" data-sketch="heron">
+          <img src="assets/decor/kulam.svg" alt="Line drawing of a stepped village pond">
+        </div>
+        <h2>Help keep your village ponds clean.</h2>
+        <p>With a citizen account you can report problems with photos, follow each complaint, and confirm when the work is done.</p>
+      </aside>
+    <div class="card auth-card">
+      <h1>Create a citizen account</h1>
+      <p class="muted">Create your citizen account in two quick steps.</p>
+
+      <div id="registerMessage"></div>
+
+      <ol class="auth-progress" aria-label="Registration progress">
+        <li id="detailsProgress" aria-current="step"><span>1</span>Your details</li>
+        <li id="securityProgress"><span>2</span>Secure account</li>
+      </ol>
+      <form id="registerForm" novalidate>
+        <div class="auth-viewport"><div class="auth-track" id="registerTrack" data-step="1">
+          <fieldset class="auth-step" id="detailsStep" aria-label="Your details" aria-hidden="false">
+            <div class="auth-fields">
+              <div class="form-group"><label for="name">Full name</label><input type="text" id="name" autocomplete="name" maxlength="150" required></div>
+              <div class="form-group"><label for="email">Email</label><input type="email" id="email" autocomplete="email" maxlength="255" required></div>
+              <div class="form-group"><label for="phone">Mobile <span class="optional">(optional)</span></label><input type="tel" id="phone" autocomplete="tel" inputmode="numeric" maxlength="10" placeholder="10 digits"></div>
+              <div class="form-group"><label for="ward">Ward <span class="optional">(optional)</span></label><select id="ward"><option value="">Select ward</option></select></div>
+            </div>
+            <button type="submit" class="btn btn-block" id="registerNextButton">Continue &rarr;</button>
+          </fieldset>
+          <fieldset class="auth-step" id="securityStep" aria-label="Secure your account" aria-hidden="true" inert disabled>
+            <div class="auth-summary" id="registrationSummary"></div>
+            <div class="auth-fields">
+              <div class="form-group"><label for="password">Password</label><input type="password" id="password" autocomplete="new-password" minlength="6" maxlength="72" required><div class="hint">At least 6 characters.</div></div>
+              <div class="form-group"><label for="confirmPassword">Confirm password</label><input type="password" id="confirmPassword" autocomplete="new-password" maxlength="72" required></div>
+            </div>
+            <div class="auth-step-actions"><button type="button" class="btn btn-outline" id="registerBackButton">&larr; Back</button><button type="submit" class="btn" id="registerButton">Create account</button></div>
+          </fieldset>
+        </div></div>
+      </form>
+
+      <div class="auth-links"><span>Already registered? <a href="login.html">Log in</a></span><span>Citizen registration</span></div>
+    </div>
+    </div>
+  </main>
+
+  <!-- live pond edge along the bottom of the screen (js/sketches.js) -->
+  <div class="sketch-slot page-strip" data-sketch="strip"></div>
+
+  <footer class="site-footer">
+    <div class="container flex-between">
+      <span class="footer-brand"><img src="assets/decor/lotus.svg" alt="">JALACHAYA &middot; Pond monitoring and pollution reporting system &middot; College project prototype</span>
+      <button type="button" class="link-button" data-reset-demo>Reset demo data</button>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/sketches.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/pages/register.js"></script>
+</body>
+</html>

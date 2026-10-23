@@ -1,0 +1,416 @@
+/* =========================================================
+   JALACHAYA - Dashboard styles
+   Used by the citizen, Panchayat and field worker portals:
+   top bar, sidebar, summary cards, filters, bar charts, task cards.
+   ========================================================= */
+
+/* ---------- Top bar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 20px;
+  min-height: 58px;
+  background: var(--forest-dark);
+  color: #fff;
+}
+.topbar .brand { color: #fff; font-size: 1.15rem; }
+.topbar .brand svg path { fill: var(--sage-light); }
+.topbar-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.portal-name {
+  font-size: 0.85rem;
+  color: var(--sage-light);
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  padding-left: 14px;
+}
+.topbar-user { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; }
+.topbar-user .btn-outline { color: #fff; border-color: rgba(255, 255, 255, 0.5); }
+.topbar-user .btn-outline:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+.demo-badge {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--warning-bg);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+/* ---------- Layout: sidebar + main ---------- */
+.app-layout {
+  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: calc(100vh - 58px);
+}
+
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.93rem;
+}
+.sidebar a:hover { background: var(--sage-pale); color: var(--forest-dark); }
+.sidebar a.active { background: var(--sage-light); color: var(--forest-dark); font-weight: 600; }
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 12px 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+/* live lotus drawing at the bottom of the sidebar */
+.sketch-slot.sidebar-art { width: 128px; margin: 0 0 10px -6px; }
+
+.main { padding: 28px 32px 48px; min-width: 0; }
+.citizen-pond-photo { width: 100%; max-height: 220px; object-fit: cover; border-radius: var(--radius); margin-bottom: 16px; }
+.page-header {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  /* thin water ripple under every page title */
+  background: url("../assets/decor/ripple.svg") repeat-x left bottom;
+}
+.page-header h1 { font-size: 1.75rem; margin-bottom: 4px; }
+.page-header p { color: var(--muted); margin: 0; }
+
+/* ---------- Summary (metric) cards ---------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--sage);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.stat-card .stat-value {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  color: var(--forest-dark);
+  line-height: 1.2;
+}
+.stat-card .stat-label { font-size: 0.85rem; color: var(--muted); }
+.stat-card.stat-alert { border-left-color: var(--danger); }
+.stat-card.stat-alert .stat-value { color: var(--danger); }
+.stat-card.stat-primary { border-left-color: var(--forest); }
+
+/* ---------- Two-column dashboard area ---------- */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.dash-grid > *, .stat-grid > *, .task-body > *, .report-layout > * { min-width: 0; }
+.dash-grid .card + .card { margin-top: 0; }
+.dash-grid .span-2 { grid-column: span 2; }
+
+/* ---------- Filter bar ---------- */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+.filters .form-group { margin: 0; }
+.filters label { font-size: 0.8rem; }
+
+/* Tabs used by the worker dashboard */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.tab {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.87rem;
+  cursor: pointer;
+  color: var(--text);
+}
+.tab:hover { border-color: var(--sage); }
+.tab.active { background: var(--forest); border-color: var(--forest); color: #fff; }
+.tab .count { opacity: 0.75; margin-left: 4px; }
+
+/* ---------- Simple list rows (dashboard lists) ---------- */
+.list { list-style: none; margin: 0; padding: 0; }
+.list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.list li:last-child { border-bottom: none; }
+.list .list-title { font-weight: 600; }
+.list .list-sub { color: var(--muted); font-size: 0.83rem; }
+.empty-state {
+  text-align: center;
+  color: var(--muted);
+  padding: 26px 10px;
+  font-size: 0.92rem;
+}
+.empty-state::before {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 48px;
+  margin: 0 auto 10px;
+  background: url("../assets/decor/lotus.svg") no-repeat center / contain;
+  opacity: 0.85;
+}
+
+/* ---------- Horizontal bar chart (plain CSS, no library) ---------- */
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 170px) minmax(0, 1fr) 34px;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.86rem;
+}
+.bar-track { height: 14px; background: #ebede5; border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--sage); }
+.bar-fill.dark { background: var(--forest-light); }
+.bar-value { text-align: right; font-weight: 600; }
+
+/* ---------- Worker task cards ---------- */
+.task-list { display: grid; gap: 16px; }
+.task-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.task-card.is-overdue { border-left: 4px solid var(--danger); }
+.task-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.task-card h3 { margin: 0; }
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 0.86rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.task-meta strong { color: var(--text); font-weight: 600; }
+.task-body {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 18px;
+}
+.task-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.note-list { margin: 8px 0 0; padding-left: 18px; font-size: 0.87rem; }
+.note-list li { margin-bottom: 4px; }
+
+/* ---------- Verification cards (citizen) ---------- */
+.verify-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+/* ---------- Report page: form + sample photo panel ---------- */
+.report-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 20px;
+  align-items: start;
+}
+.report-layout .card + .card { margin-top: 0; }
+.sample-list { display: grid; gap: 14px; }
+.sample-item .photo-box img { max-height: 150px; object-fit: cover; }
+.sample-item .btn { margin-top: 6px; }
+.tips { margin: 0; padding-left: 18px; font-size: 0.86rem; color: var(--muted); }
+.tips li { margin-bottom: 4px; }
+
+.pond-thumb { width: 64px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); }
+.pond-thumb-empty { display: block; width: 64px; height: 44px; border-radius: 4px; border: 1px dashed var(--sage);
+  background: var(--sage-pale) url("../assets/decor/lotus.svg") no-repeat center / 30px; }
+.current-photo { display: flex; gap: 12px; align-items: center; }
+.current-photo img { width: 120px; border-radius: 4px; border: 1px solid var(--border); }
+.note-photo { width: 120px; margin-top: 4px; border: 1px solid var(--border); border-radius: 4px; }
+
+/* ---------- Report page success panel ---------- */
+.success-panel { text-align: center; padding: 36px 20px; }
+.success-panel::before {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 60px;
+  margin: 0 auto 12px;
+  background: url("../assets/decor/lotus.svg") no-repeat center / contain;
+}
+.success-panel .complaint-id {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  color: var(--forest-dark);
+  margin: 6px 0 18px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .app-layout { grid-template-columns: 1fr; }
+  /* Menu becomes a row of links that wraps onto a second line if needed */
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 12px;
+    gap: 4px;
+  }
+  .sidebar a { white-space: nowrap; padding: 7px 11px; }
+  .sidebar-footer {
+    margin: 0 0 0 auto;
+    padding: 0 4px;
+    border-top: none;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .sidebar-footer .demo-note { display: none; }
+  .sidebar-footer .sidebar-art { display: none; }
+  .report-layout { grid-template-columns: 1fr; }
+  .main { padding: 22px 16px 40px; }
+  .dash-grid { grid-template-columns: minmax(0, 1fr); }
+  .dash-grid .span-2 { grid-column: auto; }
+  .task-body { grid-template-columns: minmax(0, 1fr); }
+  .report-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .topbar { flex-wrap: wrap; padding: 8px 16px; }
+  .portal-name { display: none; }
+  .topbar-user #userName { display: none; }
+  .bar-row { grid-template-columns: minmax(0, 110px) minmax(0, 1fr) 30px; }
+}
+
+/* Laptop widths: slimmer sidebar so wide tables fit */
+@media (min-width: 901px) and (max-width: 1200px) {
+  .app-layout { grid-template-columns: 180px minmax(0, 1fr); }
+  .main { padding: 26px 20px 44px; }
+}
+
+/* Phones: filters two per row, search across the full width */
+@media (max-width: 560px) {
+  .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .filters .form-group:has(input[type="search"]) { grid-column: 1 / -1; }
+}
+
+/* ---------- Full-screen layout ----------
+   The top bar and the menu stay on screen while the page scrolls,
+   the menu always reaches the bottom of the window, and the live
+   pond strip sits at the bottom of every page. */
+.topbar { position: sticky; top: 0; z-index: 30; }
+.sidebar {
+  position: sticky;
+  top: 58px;
+  height: calc(100vh - 58px);
+  align-self: start;
+  overflow-y: auto;
+}
+.main { display: flex; flex-direction: column; }
+.main > .main-strip {
+  margin: auto -32px -48px;
+  padding-top: 14px;
+  height: 100px;
+  flex: 0 0 auto;
+  width: auto;
+}
+
+/* page title on the left, a live drawing on the right */
+.page-header.has-art {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 24px;
+  padding-bottom: 16px;
+}
+.page-header-text { min-width: 0; }
+.page-actions { margin-top: 14px; }
+.page-header.citizen-complaints-header,
+.page-header.dashboard-overview-header { padding-bottom: 24px; }
+.citizen-complaints-header .page-header-text,
+.dashboard-overview-header .page-header-text { padding-bottom: 20px; }
+.citizen-header-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 16px; margin-top: 12px; }
+.sketch-slot.header-art { width: clamp(240px, 26vw, 360px); }
+.header-art svg { max-height: 156px; width: auto; max-width: 100%; margin-left: auto; }
+
+/* ticking clock in the top bar */
+.topbar-clock {
+  font-size: 0.82rem;
+  color: var(--sage-light);
+  font-variant-numeric: tabular-nums;
+  padding-right: 12px;
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+  .main > .main-strip { margin: auto -20px -44px; }
+  .sketch-slot.header-art { width: 240px; }
+}
+@media (max-width: 900px) {
+  .topbar { position: static; }
+  .sidebar { position: static; height: auto; overflow: visible; }
+  .main > .main-strip { margin: auto -16px -40px; height: 104px; }
+}
+@media (max-width: 700px) {
+  .topbar-clock { display: none; }
+  .page-header.has-art { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .sketch-slot.header-art { order: -1; width: 100%; max-width: 300px; }
+  .header-art svg { margin-left: 0; max-height: 120px; }
+}
+
+/* very wide screens: bigger menu, top bar and drawings to match the larger text */
+@media (min-width: 2200px) {
+  .topbar { min-height: 72px; padding: 0 28px; }
+  .sidebar { top: 72px; height: calc(100vh - 72px); }
+  .app-layout { grid-template-columns: 280px minmax(0, 1fr); min-height: calc(100vh - 72px); }
+  .main { padding: 36px 44px 56px; }
+  .main > .main-strip { margin: auto -44px -56px; height: 130px; }
+  .sketch-slot.sidebar-art { width: 170px; }
+  .header-art svg { max-height: 200px; }
+  .sketch-slot.header-art { width: clamp(300px, 22vw, 480px); }
+}
+@media (min-width: 3000px) {
+  .topbar { min-height: 86px; }
+  .sidebar { top: 86px; height: calc(100vh - 86px); }
+  .app-layout { grid-template-columns: 340px minmax(0, 1fr); min-height: calc(100vh - 86px); }
+  .main { padding: 44px 56px 64px; }
+  .main > .main-strip { margin: auto -56px -64px; height: 160px; }
+  .sketch-slot.sidebar-art { width: 210px; }
+  .header-art svg { max-height: 250px; }
+  .sketch-slot.header-art { width: clamp(380px, 20vw, 600px); }
+}
+@media (max-width: 360px) {
+  .main { padding: 18px 12px 36px; }
+  .main > .main-strip { margin: auto -12px -36px; }
+  .topbar { padding: 8px 12px; }
+}

@@ -1,0 +1,11 @@
+{
+  "description": "Six bundled pond photographs visually reviewed for visible litter only. This is a reused demo sanity check, not an independent field evaluation. No object boxes or water-quality labels are available.",
+  "images": [
+    {"file": "assets/samples/polluted-1.jpg", "visibleLitter": true},
+    {"file": "assets/samples/polluted-2.jpg", "visibleLitter": true},
+    {"file": "assets/samples/polluted-3.jpg", "visibleLitter": true},
+    {"file": "assets/samples/clean-1.jpg", "visibleLitter": false},
+    {"file": "assets/samples/clean-2.jpg", "visibleLitter": false},
+    {"file": "assets/samples/clean-3.jpg", "visibleLitter": false}
+  ]
+}

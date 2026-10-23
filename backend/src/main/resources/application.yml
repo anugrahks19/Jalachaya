@@ -1,0 +1,47 @@
+server:
+  port: ${PORT:8080}
+  address: ${BIND_ADDRESS:127.0.0.1}
+
+spring:
+  application:
+    name: jalachaya-backend
+  datasource:
+    url: ${DB_URL:jdbc:h2:file:./data/jalachaya;MODE=MySQL;DATABASE_TO_LOWER=TRUE}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 20MB
+
+app:
+  demo:
+    enabled: ${ENABLE_JUDGE_DEMO:false}
+    samples-dir: ${DEMO_SAMPLES_DIR:../assets/samples}
+  jwt:
+    secret: ${JWT_SECRET:}
+    issuer: jalachaya
+    ttl-hours: 8
+  bootstrap:
+    officer-email: ${BOOTSTRAP_OFFICER_EMAIL:}
+    officer-password: ${BOOTSTRAP_OFFICER_PASSWORD:}
+    officer-name: ${BOOTSTRAP_OFFICER_NAME:Panchayat Officer}
+    worker-email: ${BOOTSTRAP_WORKER_EMAIL:}
+    worker-password: ${BOOTSTRAP_WORKER_PASSWORD:}
+    worker-name: ${BOOTSTRAP_WORKER_NAME:Field Worker}
+    worker-team: ${BOOTSTRAP_WORKER_TEAM:Field Team}
+  cors:
+    allowed-origins: ${FRONTEND_ORIGINS:http://localhost:5500,http://127.0.0.1:5500}
+  upload-dir: ${UPLOAD_DIR:./uploads}
+  ai:
+    enabled: ${AI_ENABLED:false}
+    service-url: ${AI_SERVICE_URL:http://localhost:8000}
+    backend-url: ${AI_BACKEND_URL:http://localhost:8080}
+    timeout-ms: ${AI_TIMEOUT_MS:5000}
+    poll-ms: ${AI_POLL_MS:10000}

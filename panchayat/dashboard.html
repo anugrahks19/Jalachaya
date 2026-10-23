@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panchayat overview - JALACHAYA</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/motion.css">
+</head>
+<body data-root="../">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="brand" href="../index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <span class="portal-name">Panchayat office</span>
+      <span class="demo-badge hidden">Demo mode</span>
+    </div>
+    <div class="topbar-user">
+      <span class="topbar-clock" id="topbarClock"></span>
+      <span id="userName"></span>
+      <button type="button" class="btn btn-small btn-outline" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Panchayat menu">
+      <a href="dashboard.html" class="active">Overview</a>
+      <a href="complaints.html">Complaints</a>
+      <a href="ponds.html">Ponds</a>
+      <a href="../index.html#ponds">Public site</a>
+      <div class="sidebar-footer">
+        <div class="sketch-slot sidebar-art" data-sketch="lotus"></div>
+        <p class="demo-note hidden">Demo data is saved in this browser only.</p>
+        <button type="button" class="link-button small" data-reset-demo>Reset demo data</button>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="page-header has-art dashboard-overview-header">
+        <div class="page-header-text">
+          <h1>Overview</h1>
+          <p id="todayText">Complaints and field work across all registered ponds.</p>
+          <span class="live-status mt-1" id="liveStatus"></span>
+        </div>
+        <!-- live drawing (js/sketches.js) -->
+        <div class="sketch-slot header-art" data-sketch="office"></div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card stat-primary"><div class="stat-value" id="sumPonds">-</div><div class="stat-label">Active ponds</div></div>
+        <div class="stat-card"><div class="stat-value" id="sumActive">-</div><div class="stat-label">Open complaints</div></div>
+        <div class="stat-card"><div class="stat-value" id="sumNew">-</div><div class="stat-label">New / reopened</div></div>
+        <div class="stat-card"><div class="stat-value" id="sumProgress">-</div><div class="stat-label">With field workers</div></div>
+        <div class="stat-card stat-alert"><div class="stat-value" id="sumOverdue">-</div><div class="stat-label">Overdue</div></div>
+        <div class="stat-card"><div class="stat-value" id="sumReview">-</div><div class="stat-label">Awaiting your review</div></div>
+        <div class="stat-card"><div class="stat-value" id="sumCommunity">-</div><div class="stat-label">With community</div></div>
+      </div>
+
+      <div class="dash-grid">
+        <section class="card">
+          <div class="flex-between"><h3 class="card-title">Needs assignment</h3><a class="small" href="complaints.html?status=SUBMITTED">View all</a></div>
+          <ul class="list" id="newList"><li class="muted">Loading...</li></ul>
+        </section>
+
+        <section class="card">
+          <div class="flex-between"><h3 class="card-title">Overdue tasks</h3><a class="small" href="complaints.html?overdue=1">View all</a></div>
+          <ul class="list" id="overdueList"><li class="muted">Loading...</li></ul>
+        </section>
+
+        <section class="card">
+          <div class="flex-between"><h3 class="card-title">Work awaiting review</h3><a class="small" href="complaints.html?status=COMPLETION_CLAIMED">View all</a></div>
+          <ul class="list" id="reviewList"><li class="muted">Loading...</li></ul>
+        </section>
+
+        <section class="card">
+          <h3 class="card-title">Complaints by status</h3>
+          <div class="bar-chart" id="statusChart"></div>
+        </section>
+
+        <section class="card">
+          <h3 class="card-title">Complaints by category</h3>
+          <div class="bar-chart" id="categoryChart"></div>
+        </section>
+
+        <section class="card">
+          <h3 class="card-title">Pond workflow progress</h3>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Pond</th><th>Open</th><th>Workflow progress</th></tr></thead>
+              <tbody id="recoveryTable"><tr class="empty-row"><td colspan="3">Loading...</td></tr></tbody>
+            </table>
+          </div>
+          <p class="hint mt-1">Calculated by the backend from complaint stages and priority weights. This is workflow progress, not a water quality measurement.</p>
+        </section>
+      </div>
+      <!-- live pond edge along the bottom of the screen -->
+      <div class="sketch-slot page-strip main-strip" data-sketch="strip"></div>
+    </main>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/constants.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/sketches.js"></script>
+  <script src="../js/motion.js"></script>
+  <script src="../js/pages/panchayat-dashboard.js"></script>
+</body>
+</html>

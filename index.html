@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JALACHAYA - Pond Monitoring and Pollution Reporting</title>
+  <meta name="description" content="JALACHAYA lets citizens report pond pollution and track it until the Panchayat has it fixed and verified.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/motion.css">
+</head>
+<body data-root="" class="home">
+
+  <!-- ===== Header ===== -->
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+      <nav class="site-nav" id="siteNav">
+        <a href="index.html" class="active">Home</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#ponds">Ponds</a>
+        <a href="login.html" data-guest-only>Log in</a>
+        <a href="register.html" class="btn btn-small" data-guest-only>Register</a>
+        <a href="login.html" class="btn btn-small hidden" data-auth-only>My dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===== Hero ===== -->
+    <section class="hero screen" id="top" data-screen="Home">
+      <div class="container hero-grid">
+        <div>
+        <p class="eyebrow">Pond monitoring &middot; Pollution reporting</p>
+        <h1>Report pond pollution. Track it until it is fixed.</h1>
+        <p>
+          JALACHAYA connects citizens, the Panchayat office and field workers, so every
+          complaint about a village pond is recorded, assigned, cleaned up and then
+          checked by the community before it is closed.
+        </p>
+        <div class="hero-actions">
+          <a href="citizen/report.html" class="btn">Report a problem</a>
+          <a href="#ponds" class="btn btn-outline">View pond status</a>
+        </div>
+        <div class="stat-strip" id="homeStats">
+          <div><strong id="statPonds">-</strong><span>Ponds monitored</span></div>
+          <div><strong id="statComplaints">-</strong><span>Complaints recorded</span></div>
+          <div><strong id="statResolved">-</strong><span>Verified as resolved</span></div>
+        </div>
+        </div>
+        <!-- Live sketch: js/sketches.js replaces the image with an animated drawing -->
+        <div class="sketch-slot hero-art" data-sketch="kulam">
+          <img src="assets/decor/kulam.svg" alt="Line drawing of a stepped village pond with a temple and coconut palm">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Why ===== -->
+    <section class="section screen" id="why" data-screen="Why">
+      <div class="container">
+        <p class="eyebrow" data-reveal>01 &middot; The problem</p>
+        <h2 data-reveal>Why JALACHAYA</h2>
+        <p class="section-intro" data-reveal>
+          Village ponds are used for bathing, irrigation and fishing, but complaints about waste,
+          sewage or weed growth are often made verbally and then forgotten. There is no record of
+          who was responsible, whether the work was done, or whether the problem came back.
+        </p>
+        <div class="three-col mt-2" data-reveal-group>
+          <div class="card">
+            <div class="sketch-slot card-icon" data-sketch="record"></div>
+            <h3>One record per complaint</h3>
+            <p class="muted mb-0">Every report gets a complaint ID, a photo and a full history that cannot be quietly deleted.</p>
+          </div>
+          <div class="card">
+            <div class="sketch-slot card-icon" data-sketch="deadline"></div>
+            <h3>Clear responsibility</h3>
+            <p class="muted mb-0">Each task has a named field worker and a deadline. Overdue work is flagged and escalated.</p>
+          </div>
+          <div class="card">
+            <div class="sketch-slot card-icon" data-sketch="verified"></div>
+            <h3>Community verification</h3>
+            <p class="muted mb-0">Work is only marked verified after residents confirm the problem is actually solved.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== How it works ===== -->
+    <section class="section screen" id="how-it-works" data-screen="How it works">
+      <div class="container">
+        <div class="ripple-line"></div>
+        <p class="eyebrow" data-reveal>02 &middot; The process</p>
+        <h2 data-reveal>How it works</h2>
+        <p class="section-intro" data-reveal>Six steps from a citizen's report to a pond that the community agrees is clean again.</p>
+        <ol class="steps mt-2" id="howSteps" data-reveal-group>
+          <li><strong>Report</strong><span>A citizen selects the pond, describes the problem and attaches a photo.</span></li>
+          <li><strong>Review and assign</strong><span>The Panchayat office reviews it and assigns a field worker with a deadline.</span></li>
+          <li><strong>Field work</strong><span>The worker inspects the pond, records notes and carries out the work.</span></li>
+          <li><strong>Evidence</strong><span>Before and after photos are uploaded and checked by the Panchayat.</span></li>
+          <li><strong>Community check</strong><span>Residents confirm the work, or dispute it and the complaint is reopened.</span></li>
+          <li><strong>Workflow tracking</strong><span>Track each pond’s complaints from reporting to community verification.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== From the field: before / after photos of verified work ===== -->
+    <section class="section screen hidden" id="fieldSection" data-screen="From the field">
+      <div class="container">
+        <div class="ripple-line"></div>
+        <p class="eyebrow" data-reveal>03 &middot; Results</p>
+        <h2 data-reveal>From the field</h2>
+        <p class="section-intro" data-reveal>Recently verified work. Photos are taken by field workers before and after the clean-up, then checked by residents.</p>
+        <div id="fieldHighlights" class="field-grid mt-2"></div>
+      </div>
+    </section>
+
+    <!-- ===== Who uses it ===== -->
+    <section class="section screen" id="who" data-screen="Who uses it">
+      <div class="container">
+        <div class="ripple-line"></div>
+        <p class="eyebrow" data-reveal>04 &middot; The people</p>
+        <h2 data-reveal>Who uses it</h2>
+        <div class="three-col mt-2" data-reveal-group>
+          <div class="card role-card">
+            <div class="sketch-slot role-art" data-sketch="village"></div>
+            <h3>Citizens</h3>
+            <p class="muted mb-0">Submit complaints with photos, follow their progress and verify completed work.</p>
+          </div>
+          <div class="card role-card">
+            <div class="sketch-slot role-art" data-sketch="office"></div>
+            <h3>Panchayat office</h3>
+            <p class="muted mb-0">Manage ponds, review complaints, assign tasks, review evidence and handle escalations.</p>
+          </div>
+          <div class="card role-card">
+            <div class="sketch-slot role-art" data-sketch="boat"></div>
+            <h3>Field workers</h3>
+            <p class="muted mb-0">See assigned inspections, update progress and submit before/after evidence.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Public pond list ===== -->
+    <section class="section screen" id="ponds" data-screen="Pond status">
+      <div class="container">
+        <div class="ripple-line"></div>
+        <p class="eyebrow" data-reveal>05 &middot; Live</p>
+        <div class="flex-between" data-reveal>
+          <h2 class="mb-0">Pond status</h2>
+          <span class="live-status" id="liveStatus"></span>
+        </div>
+        <p class="section-intro mt-1" data-reveal>Public information for ponds registered with the Panchayat. Select a pond to see its complaint timeline. This page updates itself.</p>
+        <div class="status-layout mt-2">
+        <div class="card" data-reveal>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Pond</th>
+                  <th>Ward / Village</th>
+                  <th>Open complaints</th>
+                  <th>Resolved</th>
+                  <th>Workflow progress</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="pondTableBody">
+                <tr class="empty-row"><td colspan="6">Loading ponds...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="hint mt-1">Workflow progress is calculated from complaint stages and priority. It does not measure water quality.</p>
+        </div>
+
+        <!-- Live activity feed (no names, public information only) -->
+        <aside class="card" data-reveal>
+          <h3 class="card-title">Recent activity</h3>
+          <ul class="activity" id="activityList">
+            <li class="muted">Loading...</li>
+          </ul>
+        </aside>
+        </div>
+      </div>
+      <!-- live pond edge along the bottom of the screen -->
+      <div class="sketch-slot screen-strip" data-sketch="strip"></div>
+    </section>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="container flex-between">
+      <span class="footer-brand"><img src="assets/decor/lotus.svg" alt="">JALACHAYA &middot; Pond monitoring and pollution reporting system &middot; College project prototype</span>
+      <button type="button" class="link-button" data-reset-demo>Reset demo data</button>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/sketches.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/pages/home.js"></script>
+</body>
+</html>

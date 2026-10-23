@@ -1,0 +1,472 @@
+/* =========================================================
+   JALACHAYA - Motion
+   All animations live in this one file so they are easy to
+   find, tune or switch off. Used together with js/motion.js
+   and js/sketches.js.
+   ========================================================= */
+
+/* ---------- 1. Live sketches ---------- */
+.sketch-slot { width: 100%; }
+.sketch-slot svg, .sketch-slot img { display: block; width: 100%; height: auto; overflow: hidden; }
+
+/* a) Each stroke "draws itself" when the sketch scrolls into view */
+.sketch .draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.sketch .draw.has-fill { fill-opacity: 0; }
+
+.sketch.is-drawing .draw {
+  animation: sketch-draw 1.4s cubic-bezier(.45, .05, .35, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+.sketch.is-drawing .draw.has-fill {
+  animation: sketch-draw 1.4s cubic-bezier(.45, .05, .35, 1) forwards,
+             sketch-fill 0.9s ease forwards;
+  animation-delay: var(--d, 0s), calc(var(--d, 0s) + 0.9s);
+}
+@keyframes sketch-draw { to { stroke-dashoffset: 0; } }
+@keyframes sketch-fill { to { fill-opacity: 1; } }
+
+/* b) Things that keep moving afterwards (start after the drawing is done) */
+.sketch .sk-bird, .sketch .sk-cloud, .sketch .sk-ring, .sketch .sk-halo, .sketch .sk-flame { opacity: 0; }
+.sketch.is-drawing .sk-halo, .sketch.is-drawing .sk-flame { animation: sketch-appear 0.8s ease 2.4s forwards; }
+
+/* clouds drift slowly across the sky */
+.sketch.is-drawing .sk-cloud {
+  opacity: 1;
+  animation: sk-drift var(--dur, 60s) linear var(--delay, 0s) infinite;
+}
+@keyframes sk-drift {
+  from { transform: translate(-70px, var(--y)); }
+  to   { transform: translate(500px, var(--y)); }
+}
+
+/* birds fly past, bobbing up and down and flapping */
+.sketch.is-drawing .sk-bird {
+  animation: sk-fly var(--dur, 20s) linear var(--delay, 0s) infinite;
+}
+@keyframes sk-fly {
+  0%   { opacity: 0; transform: translate(-30px, var(--y)); }
+  4%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(500px, calc(var(--y) - 26px)); }
+}
+.sketch .sk-bob { animation: sk-bob 2.6s ease-in-out infinite alternate; }
+@keyframes sk-bob { from { transform: translateY(-3px); } to { transform: translateY(3px); } }
+.sketch .sk-wing {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sk-flap 0.5s ease-in-out infinite alternate;
+}
+@keyframes sk-flap { from { transform: scaleY(1); } to { transform: scaleY(-0.5); } }
+
+/* sun glow pulses */
+.sketch .sk-halo { transform-box: fill-box; transform-origin: center; }
+.sketch.is-drawing .sk-halo {
+  animation: sketch-appear 0.8s ease 2.4s forwards, sk-pulse 4s ease-in-out 3.2s infinite;
+}
+@keyframes sk-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.12); opacity: 0.45; }
+}
+
+/* palm fronds sway around the top of the trunk */
+.sketch .sk-palm { transform-origin: 98px 96px; }
+.sketch.is-drawing .sk-palm { animation: sk-sway 4.5s ease-in-out 2s infinite alternate; }
+@keyframes sk-sway { from { transform: rotate(-2.5deg); } to { transform: rotate(3deg); } }
+
+/* temple lamp flickers */
+.sketch .sk-flame { transform-box: fill-box; transform-origin: 50% 100%; }
+.sketch.is-drawing .sk-flame {
+  animation: sketch-appear 0.6s ease 2.6s forwards, sk-flicker 1.3s ease-in-out 3.2s infinite alternate;
+}
+@keyframes sk-flicker {
+  0%   { transform: scale(1, 1); }
+  40%  { transform: scale(0.85, 1.12); }
+  70%  { transform: scale(1.08, 0.92); }
+  100% { transform: scale(0.95, 1.05); }
+}
+
+/* ripple lines drift on the water */
+.sketch.is-drawing .sk-waves { animation: sk-waves 5s ease-in-out 2.2s infinite alternate; }
+.sketch.is-drawing .sk-waves-alt { animation-duration: 6.5s; animation-direction: alternate-reverse; }
+@keyframes sk-waves { from { transform: translateX(-7px); } to { transform: translateX(7px); } }
+
+/* rings spread out on the water surface */
+.sketch .sk-ring { transform-box: fill-box; transform-origin: center; }
+.sketch.is-drawing .sk-ring { animation: sk-ring 4.2s ease-out var(--delay, 3s) infinite; }
+@keyframes sk-ring {
+  0%   { opacity: 0.9; transform: scale(0.3); }
+  100% { opacity: 0;   transform: scale(2.4); }
+}
+
+/* lily pads float, lotus moves in the breeze */
+.sketch.is-drawing .sk-pad { animation: sk-float 3.2s ease-in-out 2.4s infinite alternate; }
+.sketch.is-drawing .sk-pad-2 { animation-duration: 3.8s; animation-delay: 2.9s; }
+.sketch.is-drawing .sk-pad-3 { animation-duration: 2.9s; animation-delay: 3.3s; }
+@keyframes sk-float { from { transform: translateY(-1.2px); } to { transform: translateY(1.4px); } }
+.sketch .sk-lotus { transform-box: fill-box; transform-origin: 50% 100%; }
+.sketch.is-drawing .sk-lotus { animation: sk-lotus 3.6s ease-in-out 2.4s infinite alternate; }
+@keyframes sk-lotus {
+  from { transform: rotate(-4deg) translateY(0); }
+  to   { transform: rotate(4deg) translateY(1px); }
+}
+
+@keyframes sketch-appear { to { opacity: 1; } }
+.sketch .sk-late { opacity: 0; }
+.sketch.is-drawing .sk-late { animation: sketch-appear 0.5s ease 1.6s forwards; }
+
+/* ---------- 1b. Loops used by the other drawings ----------
+   (office, village, boat, phone, heron, strip, lotus, icons)
+   Each loop starts once the drawing has scrolled into view. */
+
+/* anything that sways from its base: reeds, palm, tree, lotus bud */
+.sketch.is-drawing .sk-sway {
+  animation: sk-sway-any var(--dur, 4s) ease-in-out 1.8s infinite alternate;
+}
+@keyframes sk-sway-any {
+  from { transform: rotate(calc(var(--a, 2deg) * -1)); }
+  to   { transform: rotate(var(--a, 2deg)); }
+}
+
+/* Panchayat flag waves */
+.sketch.is-drawing .sk-flag { animation: sk-flag 1.5s ease-in-out 1.6s infinite alternate; }
+@keyframes sk-flag {
+  from { transform: skewY(-7deg) scaleX(1); }
+  to   { transform: skewY(5deg) scaleX(0.88); }
+}
+
+/* villager walks to the office door */
+.sketch .sk-walker { opacity: 0; }
+.sketch.is-drawing .sk-walker { animation: sk-walk var(--dur, 14s) linear var(--delay, 2s) infinite; }
+@keyframes sk-walk {
+  0%   { opacity: 0; transform: translate(var(--from), var(--y)); }
+  5%   { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--to), var(--y)); }
+}
+.sketch .sk-step { animation: sk-step 0.36s ease-in-out infinite alternate; }
+@keyframes sk-step { from { transform: translateY(-1px); } to { transform: translateY(0.5px); } }
+.sketch .sk-leg { transform-origin: 0 -10px; animation: sk-leg 0.36s ease-in-out infinite alternate; }
+.sketch .sk-leg-b { animation-direction: alternate-reverse; }
+@keyframes sk-leg { from { transform: rotate(-24deg); } to { transform: rotate(24deg); } }
+
+/* smoke rising from the house */
+.sketch .sk-puff { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.sketch.is-drawing .sk-puff { animation: sk-puff 3.9s ease-out var(--delay, 0s) infinite; }
+@keyframes sk-puff {
+  0%   { opacity: 0;   transform: translate(0, 0) scale(0.6); }
+  15%  { opacity: 0.9; }
+  100% { opacity: 0;   transform: translate(9px, -34px) scale(1.7); }
+}
+
+/* the resident's phone flashes */
+.sketch .sk-flash { opacity: 0; }
+.sketch.is-drawing .sk-flash { animation: sk-flash 4.5s ease 3s infinite; }
+@keyframes sk-flash {
+  0%, 84% { opacity: 0; }
+  87%, 93% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* worker's boat rocks, the scoop dips, waste drifts in and is collected */
+.sketch.is-drawing .sk-boat { animation: sk-rock 4s ease-in-out infinite alternate; }
+@keyframes sk-rock {
+  from { transform: rotate(-1.6deg) translateY(-1px); }
+  to   { transform: rotate(1.8deg) translateY(2px); }
+}
+.sketch.is-drawing .sk-rake { animation: sk-scoop 3.2s ease-in-out 1.6s infinite alternate; }
+@keyframes sk-scoop { from { transform: rotate(-7deg); } to { transform: rotate(5deg); } }
+.sketch .sk-debris { opacity: 0; }
+.sketch.is-drawing .sk-debris { animation: sk-collect var(--dur, 12s) linear var(--delay, 0s) infinite; }
+@keyframes sk-collect {
+  0%   { opacity: 0; transform: translate(380px, var(--y)); }
+  8%   { opacity: 1; }
+  82%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(244px, var(--y)); }
+}
+
+/* report page: aim, focus, click, sent */
+.sketch .sk-march { opacity: 0; stroke-dasharray: 4 7; }
+.sketch.is-drawing .sk-march { animation: sketch-appear 0.6s ease 2.2s forwards, sk-march 1.2s linear 2.2s infinite; }
+@keyframes sk-march { to { stroke-dashoffset: -22; } }
+.sketch .sk-shutter, .sketch .sk-focus, .sketch .sk-sent { opacity: 0; }
+.sketch.is-drawing .sk-shutter { animation: sk-shutter 5s ease 3s infinite; }
+@keyframes sk-shutter { 0%, 70% { opacity: 0; } 72% { opacity: 0.95; } 80%, 100% { opacity: 0; } }
+.sketch.is-drawing .sk-focus { animation: sk-focus 5s ease-in-out 3s infinite; }
+@keyframes sk-focus {
+  0%       { opacity: 0; transform: scale(1.3); }
+  20%      { opacity: 1; transform: scale(1); }
+  70%      { opacity: 1; transform: scale(1); }
+  72%      { transform: scale(0.9); }
+  80%      { opacity: 1; transform: scale(1); }
+  92%, 100% { opacity: 0; transform: scale(1.3); }
+}
+.sketch.is-drawing .sk-sent { animation: sk-sent 5s ease 3s infinite; }
+@keyframes sk-sent {
+  0%, 74%  { opacity: 0; transform: scale(0.4); }
+  80%      { opacity: 1; transform: scale(1.12); }
+  84%, 95% { opacity: 1; transform: scale(1); }
+  100%     { opacity: 0; transform: scale(1); }
+}
+
+/* heron dips its head now and then */
+.sketch.is-drawing .sk-dip { animation: sk-dip 7s ease-in-out 3s infinite; }
+@keyframes sk-dip {
+  0%, 60% { transform: rotate(0deg); }
+  68%, 73% { transform: rotate(26deg); }
+  82%, 100% { transform: rotate(0deg); }
+}
+
+/* a fish jumps out of the water in an arc */
+.sketch .sk-jump { opacity: 0; }
+.sketch.is-drawing .sk-jump { animation: sk-jump var(--dur, 8s) linear var(--delay, 4s) infinite; }
+@keyframes sk-jump {
+  0%   { opacity: 0; transform: translate(var(--x0), var(--y0)) rotate(-55deg); animation-timing-function: ease-out; }
+  2%   { opacity: 1; }
+  10%  { transform: translate(calc(var(--x0) + var(--dx) / 2), calc(var(--y0) - var(--h))) rotate(0deg); animation-timing-function: ease-in; }
+  20%  { opacity: 1; transform: translate(calc(var(--x0) + var(--dx)), var(--y0)) rotate(55deg); }
+  21%, 100% { opacity: 0; transform: translate(calc(var(--x0) + var(--dx)), var(--y0)) rotate(55deg); }
+}
+
+/* dragonfly zig-zags over the water */
+.sketch .sk-dragonfly { opacity: 0; }
+.sketch.is-drawing .sk-dragonfly { animation: sk-dragon 15s ease-in-out 2.5s infinite; }
+@keyframes sk-dragon {
+  0%   { opacity: 0; transform: translate(40px, 150px); }
+  6%   { opacity: 1; }
+  22%  { transform: translate(150px, 124px); }
+  38%  { transform: translate(196px, 170px); }
+  55%  { transform: translate(300px, 136px); }
+  72%  { transform: translate(350px, 178px); }
+  92%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(470px, 140px); }
+}
+.sketch .sk-buzz { transform-box: fill-box; transform-origin: center; animation: sk-buzz 0.09s linear infinite alternate; }
+@keyframes sk-buzz { from { transform: scaleY(1); } to { transform: scaleY(0.35); } }
+
+/* duck paddles across the water strip */
+.sketch .sk-duck { transform: translate(var(--pond-start, -60px), 58px); }
+.sketch.is-drawing .sk-duck { animation: sk-paddle 46s linear -16s infinite alternate; }
+.sketch.is-drawing .sk-duck-facing { animation: sk-duck-face 92s steps(1, end) -16s infinite; transform-origin: 0 0; }
+@keyframes sk-duck-face {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(-1); }
+}
+@keyframes sk-paddle {
+  from { transform: translate(var(--pond-start, -60px), var(--y)); }
+  to   { transform: translate(var(--pond-end, 1260px), var(--y)); }
+}
+
+/* small icons: clipboard fills in, clock ticks, check confirms */
+.sketch .sk-write { transform-box: fill-box; transform-origin: left center; transform: scaleX(0); }
+.sketch.is-drawing .sk-write { animation: sk-write 4.8s ease-in-out var(--delay, 0s) infinite; }
+@keyframes sk-write {
+  0%       { transform: scaleX(0); opacity: 1; }
+  16%      { transform: scaleX(1); }
+  86%      { transform: scaleX(1); opacity: 1; }
+  100%     { transform: scaleX(1); opacity: 0; }
+}
+.sketch .sk-tick { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.sketch.is-drawing .sk-tick { animation: sk-tick 4.8s ease 0s infinite; }
+.sketch.is-drawing .sk-tick-big { animation-duration: 3.6s; }
+@keyframes sk-tick {
+  0%, 26% { stroke-dashoffset: 1; opacity: 1; }
+  40%      { stroke-dashoffset: 0; }
+  86%      { stroke-dashoffset: 0; opacity: 1; }
+  100%     { stroke-dashoffset: 0; opacity: 0; }
+}
+.sketch.is-drawing .sk-hand-m { animation: sk-turn 8s linear infinite; }
+.sketch.is-drawing .sk-hand-h { animation: sk-turn 96s linear infinite; }
+@keyframes sk-turn { to { transform: rotate(360deg); } }
+.sketch.is-drawing .sk-pulse { animation: sk-pulse-ring 2.6s ease-out 1s infinite; }
+@keyframes sk-pulse-ring {
+  0%   { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1.45); }
+}
+
+/* ---------- 2. Drifting water-ripple lines ---------- */
+.ripple-line { animation: ripple-mid 9s linear infinite; }
+.page-header { animation: ripple-bottom 9s linear infinite; }
+@keyframes ripple-mid    { from { background-position: 0 50%; }  to { background-position: 120px 50%; } }
+@keyframes ripple-bottom { from { background-position: 0 100%; } to { background-position: 120px 100%; } }
+
+/* ---------- 3. Reveal on scroll (only when JavaScript is running) ---------- */
+.motion-ready .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2, .7, .2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.motion-ready .reveal.is-visible { opacity: 1; transform: none; }
+
+/* ---------- 4. First-load entrance for dashboard content ----------
+   Only during the first ~3 seconds (class .motion-intro on <html>),
+   so live refreshes later do not replay it. */
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.motion-intro .stat-card,
+.motion-intro .dash-grid > .card,
+.motion-intro .task-card,
+.motion-intro .table tbody tr,
+.motion-intro .list li,
+.motion-intro .stepper li,
+.motion-intro .timeline li,
+.motion-intro .activity li {
+  animation: rise 0.55s cubic-bezier(.2, .7, .2, 1) both;
+}
+.motion-intro .stat-card:nth-child(2), .motion-intro .dash-grid > .card:nth-child(2),
+.motion-intro .task-card:nth-child(2), .motion-intro .table tbody tr:nth-child(2),
+.motion-intro .list li:nth-child(2), .motion-intro .stepper li:nth-child(2),
+.motion-intro .activity li:nth-child(2) { animation-delay: 70ms; }
+.motion-intro .stat-card:nth-child(3), .motion-intro .dash-grid > .card:nth-child(3),
+.motion-intro .task-card:nth-child(3), .motion-intro .table tbody tr:nth-child(3),
+.motion-intro .list li:nth-child(3), .motion-intro .stepper li:nth-child(3),
+.motion-intro .activity li:nth-child(3) { animation-delay: 140ms; }
+.motion-intro .stat-card:nth-child(4), .motion-intro .dash-grid > .card:nth-child(4),
+.motion-intro .table tbody tr:nth-child(4), .motion-intro .list li:nth-child(4),
+.motion-intro .stepper li:nth-child(4), .motion-intro .activity li:nth-child(4) { animation-delay: 210ms; }
+.motion-intro .stat-card:nth-child(5), .motion-intro .dash-grid > .card:nth-child(5),
+.motion-intro .table tbody tr:nth-child(5), .motion-intro .stepper li:nth-child(5),
+.motion-intro .activity li:nth-child(5) { animation-delay: 280ms; }
+.motion-intro .stat-card:nth-child(n+6), .motion-intro .dash-grid > .card:nth-child(n+6),
+.motion-intro .table tbody tr:nth-child(n+6), .motion-intro .stepper li:nth-child(n+6),
+.motion-intro .activity li:nth-child(n+6) { animation-delay: 350ms; }
+
+/* bars and meters grow from the left */
+.motion-intro .bar-fill, .motion-intro .meter span {
+  transform-origin: left center;
+  animation: grow 1.1s cubic-bezier(.2, .7, .2, 1) 0.2s both;
+}
+
+/* ---------- 5. Small interactions ---------- */
+.btn { transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.1s; }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+
+.three-col .card, .steps li, .stat-card, .gallery figure, .sample-item .photo-box, .before-after .photo-box {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.three-col .card:hover, .steps li:hover, .stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(31, 43, 35, 0.08);
+  border-color: var(--sage);
+}
+.gallery figure:hover, .sample-item .photo-box:hover, .before-after .photo-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(31, 43, 35, 0.1);
+}
+.photo-box, .gallery figure { overflow: hidden; }
+.photo-box img, .gallery img { transition: transform 0.6s ease; }
+.photo-box:hover img, .gallery figure:hover img { transform: scale(1.04); }
+
+.steps li::before { transition: transform 0.3s ease, background-color 0.3s ease; }
+.steps li:hover::before { transform: rotate(-8deg) scale(1.08); }
+
+.toast { animation: toast-in 0.35s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+dialog[open] { animation: dialog-in 0.25s ease both; }
+dialog[open]::backdrop { animation: backdrop-in 0.25s ease both; }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(12px) scale(0.99); } to { opacity: 1; transform: none; } }
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+
+.thumb { animation: rise 0.35s ease both; }
+
+/* ---------- 6. Live indicator and new items ---------- */
+.live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  white-space: nowrap;
+}
+.live-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3f8a5a;
+  flex: 0 0 auto;
+}
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #3f8a5a;
+  animation: live-ping 1.8s ease-out infinite;
+}
+@keyframes live-ping { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(2.8); opacity: 0; } }
+.live-status.flash { animation: live-flash 1.2s ease; }
+@keyframes live-flash { 0% { background: var(--sage-light); } 100% { background: var(--surface); } }
+
+/* a row or card that just arrived through a live update */
+.is-new { animation: new-item 2.4s ease both; }
+@keyframes new-item {
+  0%   { background-color: #e3ecd9; box-shadow: inset 3px 0 0 var(--forest); }
+  70%  { background-color: #eef3e8; box-shadow: inset 3px 0 0 var(--forest); }
+  100% { background-color: transparent; box-shadow: inset 3px 0 0 transparent; }
+}
+
+/* ---------- 7. Respect "reduce motion" ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+  .sketch .draw { stroke-dashoffset: 0; }
+  .sketch .draw.has-fill { fill-opacity: 1; }
+  .sketch .sk-bird, .sketch .sk-ring { display: none; }
+  .sketch .sk-cloud { opacity: 1; transform: translate(120px, 40px); }
+  .sketch .sk-late, .sketch .sk-halo, .sketch .sk-flame { opacity: 1; }
+  .sketch .sk-tick { stroke-dashoffset: 0; }
+  .sketch .sk-write { transform: none; }
+  .sketch .sk-march { opacity: 1; }
+  .sketch .sk-duck { transform: translate(var(--pond-middle, 560px), 58px); }
+  .sketch .sk-walker, .sketch .sk-dragonfly, .sketch .sk-jump, .sketch .sk-debris { display: none; }
+  .motion-ready .reveal { opacity: 1; transform: none; }
+}
+
+/* ---------- 8. Slow drift on large photos (pond banner) ---------- */
+.pond-banner .pond-photo { animation: slow-pan 24s ease-in-out infinite alternate; }
+@keyframes slow-pan {
+  from { transform: scale(1.02) translateX(0); }
+  to   { transform: scale(1.08) translateX(-1.5%); }
+}
+@media (prefers-reduced-motion: reduce) { .pond-banner .pond-photo { animation: none; } }
+
+/* ---------- 9. Home page: live steps and photos ---------- */
+/* "How it works": hovering a step lifts it, pops its number and
+   runs a short bar along its bottom edge */
+.steps li { overflow: hidden; }
+.steps li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--forest);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.45s cubic-bezier(.2, .7, .2, 1);
+}
+.steps li:hover { border-color: var(--forest); }
+.steps li:hover::after { transform: scaleX(1); }
+.steps li:hover::before { background: var(--forest-light); transform: scale(1.15); }
+
+/* before/after photos drift slowly, like a camera panning */
+.field-grid .photo-box img { animation: slow-pan 22s ease-in-out infinite alternate; }
+.field-grid .card:nth-child(2) .photo-box img { animation-delay: -9s; }
+@media (prefers-reduced-motion: reduce) {
+  .field-grid .photo-box img { animation: none; }
+}

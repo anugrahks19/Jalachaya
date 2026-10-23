@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ponds - JALACHAYA</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/motion.css">
+</head>
+<body data-root="../">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="brand" href="../index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <span class="portal-name">Panchayat office</span>
+      <span class="demo-badge hidden">Demo mode</span>
+    </div>
+    <div class="topbar-user">
+      <span class="topbar-clock" id="topbarClock"></span>
+      <span id="userName"></span>
+      <button type="button" class="btn btn-small btn-outline" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Panchayat menu">
+      <a href="dashboard.html">Overview</a>
+      <a href="complaints.html">Complaints</a>
+      <a href="ponds.html" class="active">Ponds</a>
+      <a href="../index.html#ponds">Public site</a>
+      <div class="sidebar-footer">
+        <div class="sketch-slot sidebar-art" data-sketch="lotus"></div>
+        <p class="demo-note hidden">Demo data is saved in this browser only.</p>
+        <button type="button" class="link-button small" data-reset-demo>Reset demo data</button>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="page-header has-art">
+        <div class="page-header-text">
+          <h1>Ponds</h1>
+          <p>Register ponds and keep their details up to date. Only active ponds appear on the public site.</p>
+          <div class="page-actions"><button type="button" class="btn" id="addPondBtn">Add pond</button></div>
+        </div>
+        <!-- live drawing (js/sketches.js) -->
+        <div class="sketch-slot header-art" data-sketch="kulam"></div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Photo</th>
+                <th>Name</th>
+                <th>Ward / Village</th>
+                <th class="opt">Area</th>
+                <th class="opt">Coordinates</th>
+                <th>Open complaints</th>
+                <th>Workflow progress</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="pondTableBody">
+              <tr class="empty-row"><td colspan="9">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- live pond edge along the bottom of the screen -->
+      <div class="sketch-slot page-strip main-strip" data-sketch="strip"></div>
+    </main>
+  </div>
+
+  <!-- Add / edit pond dialog -->
+  <dialog id="pondDialog" aria-labelledby="pondDialogTitle">
+    <div class="dialog-header">
+      <h2 id="pondDialogTitle">Add pond</h2>
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button>
+    </div>
+    <form class="dialog-body" id="pondForm" novalidate>
+      <div id="pondFormMessage"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pondName">Pond name</label>
+          <input type="text" id="pondName" maxlength="80">
+        </div>
+        <div class="form-group">
+          <label for="pondWard">Ward</label>
+          <select id="pondWard"><option value="">Select ward</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pondVillage">Village / locality <span class="optional">(optional)</span></label>
+          <input type="text" id="pondVillage" maxlength="80">
+        </div>
+        <div class="form-group">
+          <label for="pondArea">Area in acres <span class="optional">(optional)</span></label>
+          <input type="number" id="pondArea" step="0.1" min="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pondLat">Latitude</label>
+          <input type="number" id="pondLat" step="any" placeholder="e.g. 10.5276">
+        </div>
+        <div class="form-group">
+          <label for="pondLng">Longitude</label>
+          <input type="number" id="pondLng" step="any" placeholder="e.g. 76.2144">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Pond photo <span class="optional">(optional, shown on the public pond page)</span></label>
+        <div id="pondCurrentPhoto" class="hidden mb-2"></div>
+        <div id="pondPhoto"></div>
+      </div>
+      <div class="form-group">
+        <label for="pondDescription">Description <span class="optional">(optional)</span></label>
+        <textarea id="pondDescription" maxlength="300" placeholder="Use of the pond, access points, nearby drains..."></textarea>
+      </div>
+      <div class="flex">
+        <button type="submit" class="btn" id="pondSaveBtn">Save pond</button>
+        <button type="button" class="btn btn-outline" data-close-dialog>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/constants.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/sketches.js"></script>
+  <script src="../js/motion.js"></script>
+  <script src="../js/pages/panchayat-ponds.js"></script>
+</body>
+</html>

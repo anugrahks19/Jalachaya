@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 330" fill="none" stroke="#2f5b3e" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Line drawing of a stepped temple pond (kulam) -->
+  <!-- sun -->
+  <circle cx="252" cy="78" r="22" stroke="#8ea888" stroke-width="2"/>
+
+  <!-- coconut palm -->
+  <path d="M80 200 C 86 160, 88 130, 98 96" stroke-width="4"/>
+  <path d="M98 96 C 72 80, 52 86, 38 104" stroke-width="3"/>
+  <path d="M98 96 C 78 70, 58 64, 44 66" stroke-width="3"/>
+  <path d="M98 96 C 106 66, 122 56, 142 58" stroke-width="3"/>
+  <path d="M98 96 C 124 84, 142 92, 152 110" stroke-width="3"/>
+  <path d="M98 96 C 98 72, 90 56, 80 48" stroke-width="3"/>
+  <circle cx="100" cy="102" r="3" fill="#2f5b3e" stroke="none"/>
+  <circle cx="94" cy="104" r="3" fill="#2f5b3e" stroke="none"/>
+
+  <!-- bushes on the far bank -->
+  <path d="M150 190 q 15 -18 30 0 q 15 -22 32 0 q 14 -16 28 0 q 12 -14 24 0" stroke="#8ea888" stroke-width="2.5"/>
+
+  <!-- small Kerala-style temple -->
+  <path d="M316 164 L340 140 L390 140 L414 164 Z" fill="#dfe7d7" stroke-width="2.5"/>
+  <path d="M346 140 L365 120 L384 140" fill="#dfe7d7" stroke-width="2.5"/>
+  <path d="M365 120 V 110" stroke-width="2"/>
+  <rect x="332" y="164" width="66" height="26" fill="#fffdf8" stroke-width="2.5"/>
+  <rect x="358" y="172" width="14" height="18" stroke-width="2"/>
+
+  <!-- bank line -->
+  <path d="M10 200 H 470" stroke-width="2.5"/>
+
+  <!-- stone steps going down to the water -->
+  <path d="M20 200 H460 L448 214 H32 Z" fill="#eef2e8" stroke-width="2"/>
+  <path d="M32 214 H448 L436 228 H44 Z" fill="#eef2e8" stroke-width="2"/>
+  <path d="M44 228 H436 L424 242 H56 Z" fill="#eef2e8" stroke-width="2"/>
+
+  <!-- water -->
+  <path d="M56 242 H424 V296 H56 Z" fill="#dfe7d7" stroke-width="2"/>
+  <path d="M84 258 q 10 -5 20 0 q 10 5 20 0" stroke="#8ea888" stroke-width="2"/>
+  <path d="M170 276 q 10 -5 20 0 q 10 5 20 0 q 10 -5 20 0" stroke="#8ea888" stroke-width="2"/>
+  <path d="M360 260 q 10 -5 20 0 q 10 5 20 0" stroke="#8ea888" stroke-width="2"/>
+  <path d="M110 286 q 8 -4 16 0" stroke="#8ea888" stroke-width="2"/>
+
+  <!-- lily pads and lotus -->
+  <ellipse cx="282" cy="286" rx="18" ry="6" fill="#8ea888" stroke-width="1.5"/>
+  <ellipse cx="342" cy="280" rx="14" ry="5" fill="#8ea888" stroke-width="1.5"/>
+  <ellipse cx="236" cy="262" rx="11" ry="4" fill="#8ea888" stroke-width="1.5"/>
+  <path d="M310 274 C 303 264, 305 254, 310 246 C 315 254, 317 264, 310 274 Z" fill="#ecd3cf" stroke-width="2"/>
+  <path d="M310 274 C 298 270, 293 262, 292 254 C 302 256, 308 264, 310 274 Z" fill="#ecd3cf" stroke-width="2"/>
+  <path d="M310 274 C 322 270, 327 262, 328 254 C 318 256, 312 264, 310 274 Z" fill="#ecd3cf" stroke-width="2"/>
+
+  <!-- front steps -->
+  <path d="M40 296 H440" stroke-width="2"/>
+  <path d="M26 308 H454" stroke-width="2"/>
+  <path d="M12 320 H468" stroke-width="2"/>
+</svg>

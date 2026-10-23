@@ -1,0 +1,14 @@
+.runtime/
+__pycache__/
+.pytest_cache/
+.venv/
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+*.pem
+*.key
+*.p12
+*.pfx
+

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify work - JALACHAYA</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/motion.css">
+</head>
+<body data-root="../">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="brand" href="../index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <span class="portal-name">Citizen portal</span>
+      <span class="demo-badge hidden">Demo mode</span>
+    </div>
+    <div class="topbar-user">
+      <span class="topbar-clock" id="topbarClock"></span>
+      <span id="userName"></span>
+      <button type="button" class="btn btn-small btn-outline" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Citizen menu">
+      <a href="dashboard.html">My complaints</a>
+      <a href="report.html">Report a problem</a>
+      <a href="verify.html" class="active">Verify work</a>
+      <a href="ponds.html">Public pond status</a>
+      <div class="sidebar-footer">
+        <div class="sketch-slot sidebar-art" data-sketch="lotus"></div>
+        <p class="demo-note hidden">Demo data is saved in this browser only.</p>
+        <button type="button" class="link-button small" data-reset-demo>Reset demo data</button>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="page-header has-art">
+        <div class="page-header-text">
+          <h1>Verify completed work</h1>
+          <p>Field workers have marked these problems as fixed. Compare the before and after photos, and if you can, check the pond yourself.</p>
+          <span class="live-status mt-1" id="liveStatus"></span>
+        </div>
+        <!-- live drawing (js/sketches.js) -->
+        <div class="sketch-slot header-art" data-sketch="kulam"></div>
+      </div>
+
+      <div class="alert alert-info">
+        Confirm only if the visible problem looks resolved. If you dispute it, the complaint is reopened and the
+        original evidence is kept on record.
+      </div>
+
+      <div id="verifyList" class="task-list">
+        <p class="muted">Loading...</p>
+      </div>
+      <!-- live pond edge along the bottom of the screen -->
+      <div class="sketch-slot page-strip main-strip" data-sketch="strip"></div>
+    </main>
+  </div>
+
+  <!-- Confirm / dispute dialog -->
+  <dialog id="verifyDialog" class="dialog-small" aria-labelledby="verifyDialogTitle">
+    <div class="dialog-header">
+      <h2 id="verifyDialogTitle">Verify work</h2>
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button>
+    </div>
+    <form class="dialog-body" id="verifyForm" novalidate>
+      <p id="verifyDialogText"></p>
+      <div class="form-group">
+        <label for="verifyComment" id="verifyCommentLabel">Comment</label>
+        <textarea id="verifyComment" maxlength="300"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Photo <span class="optional">(optional)</span></label>
+        <div id="verifyPhoto"></div>
+        <div class="hint" id="verifyPhotoHint">A current photo helps the Panchayat see what is still wrong.</div>
+      </div>
+      <div class="flex">
+        <button type="submit" class="btn" id="verifySubmitBtn">Submit</button>
+        <button type="button" class="btn btn-outline" data-close-dialog>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/constants.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/sketches.js"></script>
+  <script src="../js/motion.js"></script>
+  <script src="../js/pages/verify.js"></script>
+</body>
+</html>

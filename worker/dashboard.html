@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My tasks - JALACHAYA</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/motion.css">
+</head>
+<body data-root="../">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="brand" href="../index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <span class="portal-name">Field worker</span>
+      <span class="demo-badge hidden">Demo mode</span>
+    </div>
+    <div class="topbar-user">
+      <span class="topbar-clock" id="topbarClock"></span>
+      <span id="userName"></span>
+      <button type="button" class="btn btn-small btn-outline" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Field worker menu">
+      <a href="dashboard.html" class="active">My tasks</a>
+      <a href="../index.html#ponds">Public pond status</a>
+      <div class="sidebar-footer">
+        <div class="sketch-slot sidebar-art" data-sketch="lotus"></div>
+        <p class="demo-note hidden">Demo data is saved in this browser only.</p>
+        <button type="button" class="link-button small" data-reset-demo>Reset demo data</button>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="page-header has-art dashboard-overview-header">
+        <div class="page-header-text">
+          <h1>My inspection tasks</h1>
+          <p>Start an inspection, record what you find, and submit before/after photos when the work is done.</p>
+          <span class="live-status mt-1" id="liveStatus"></span>
+        </div>
+        <!-- live drawing (js/sketches.js) -->
+        <div class="sketch-slot header-art" data-sketch="boat"></div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card stat-primary"><div class="stat-value" id="statNew">-</div><div class="stat-label">Not started</div></div>
+        <div class="stat-card"><div class="stat-value" id="statProgress">-</div><div class="stat-label">In progress</div></div>
+        <div class="stat-card stat-alert"><div class="stat-value" id="statOverdue">-</div><div class="stat-label">Overdue</div></div>
+        <div class="stat-card"><div class="stat-value" id="statSubmitted">-</div><div class="stat-label">Waiting for review</div></div>
+        <div class="stat-card"><div class="stat-value" id="statDone">-</div><div class="stat-label">Verified</div></div>
+      </div>
+
+      <div class="tabs" role="tablist" id="taskTabs">
+        <button type="button" class="tab active" data-tab="open">Open<span class="count" id="countOpen"></span></button>
+        <button type="button" class="tab" data-tab="overdue">Overdue<span class="count" id="countOverdue"></span></button>
+        <button type="button" class="tab" data-tab="submitted">Submitted<span class="count" id="countSubmitted"></span></button>
+        <button type="button" class="tab" data-tab="closed">Completed / closed<span class="count" id="countClosed"></span></button>
+        <button type="button" class="tab" data-tab="all">All<span class="count" id="countAll"></span></button>
+      </div>
+
+      <div class="task-list" id="taskList">
+        <p class="muted">Loading tasks...</p>
+      </div>
+      <!-- live pond edge along the bottom of the screen -->
+      <div class="sketch-slot page-strip main-strip" data-sketch="strip"></div>
+    </main>
+  </div>
+
+  <!-- Add inspection note -->
+  <dialog id="noteDialog" class="dialog-small" aria-labelledby="noteDialogTitle">
+    <div class="dialog-header">
+      <h2 id="noteDialogTitle">Add inspection note</h2>
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button>
+    </div>
+    <form class="dialog-body" id="noteForm" novalidate>
+      <div class="form-group">
+        <label for="noteText">What did you find or do?</label>
+        <textarea id="noteText" maxlength="400" placeholder="e.g. Drain outlet located; waiting for materials"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Photo <span class="optional">(optional)</span></label>
+        <div id="notePhoto"></div>
+      </div>
+      <div class="flex">
+        <button type="submit" class="btn" id="noteSaveBtn">Save note</button>
+        <button type="button" class="btn btn-outline" data-close-dialog>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Submit completion with before/after evidence -->
+  <dialog id="completionDialog" aria-labelledby="completionDialogTitle">
+    <div class="dialog-header">
+      <h2 id="completionDialogTitle">Submit completed work</h2>
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button>
+    </div>
+    <form class="dialog-body" id="completionForm" novalidate>
+      <p class="muted" id="completionTaskInfo"></p>
+      <div class="evidence-grid">
+        <div class="form-group">
+          <label>Before photo</label>
+          <div id="beforePhoto"></div>
+        </div>
+        <div class="form-group">
+          <label>After photo</label>
+          <div id="afterPhoto"></div>
+        </div>
+      </div>
+      <p class="hint">Take both photos from the same spot and angle so they can be compared.
+        <span class="demo-note hidden">&middot; <button type="button" class="link-button" id="useSampleEvidence">Use the sample photos</button> (demo)</span></p>
+      <div class="form-group">
+        <label for="completionRemarks">Work done</label>
+        <textarea id="completionRemarks" maxlength="500" placeholder="Describe what was cleaned, removed or repaired"></textarea>
+      </div>
+      <div class="flex">
+        <button type="submit" class="btn" id="completionSubmitBtn">Submit for review</button>
+        <button type="button" class="btn btn-outline" data-close-dialog>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/constants.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/sketches.js"></script>
+  <script src="../js/motion.js"></script>
+  <script src="../js/pages/worker-dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,1088 @@
+/* =========================================================
+   JALACHAYA - Global styles
+   Shared by every page: colours, typography, buttons, forms,
+   tables, badges, alerts, dialogs and the public website.
+   ========================================================= */
+
+/* ---------- 1. Colour palette and design tokens ---------- */
+:root {
+  --forest: #2f5b3e;        /* primary - forest green */
+  --forest-dark: #22442e;
+  --forest-light: #3d7150;
+  --sage: #8ea888;          /* secondary - sage green */
+  --sage-light: #dfe7d7;
+  --sage-pale: #eef2e8;
+  --off-white: #f7f5ef;     /* page background */
+  --surface: #fffdf8;       /* cards and panels */
+  --border: #d8dccf;
+  --text: #1f2b23;
+  --muted: #5d6a60;
+
+  --danger: #9e3f2b;
+  --danger-bg: #f6e3dc;
+  --warning: #85621a;
+  --warning-bg: #f4ead3;
+  --info: #3e5d75;
+  --info-bg: #e4eaef;
+
+  --radius: 6px;
+  --shadow: 0 1px 2px rgba(31, 43, 35, 0.06);
+  --font-body: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-heading: Georgia, "Times New Roman", serif;
+}
+
+/* ---------- 2. Base ---------- */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;            /* keeps the footer at the bottom of short pages */
+  flex-direction: column;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--off-white);
+  /* Safety net: nothing may make the page scroll sideways.
+     The real causes are fixed below; this just guards against new ones. */
+  overflow-x: hidden;
+}
+
+/* Long words (emails, codes) wrap instead of widening the page */
+dd, li, p, .list-title, .list-sub { overflow-wrap: break-word; }
+.btn { white-space: nowrap; }
+
+/* Grid and flex children may shrink below their content width */
+.form-row > *, .filters > *, .three-col > *, .steps > *, .evidence-grid > *,
+.before-after > *, .hero-grid > *, .auth-layout > * { min-width: 0; }
+select { max-width: 100%; text-overflow: ellipsis; }
+
+h1, h2 {
+  font-family: var(--font-heading);
+  font-weight: normal;
+  color: var(--forest-dark);
+  line-height: 1.25;
+  margin: 0 0 0.5em;
+}
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.05rem; margin: 0 0 0.5em; }
+p  { margin: 0 0 1em; }
+
+a { color: var(--forest); }
+a:hover { color: var(--forest-dark); }
+
+img { max-width: 100%; display: block; }
+
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ---------- 3. Utility classes ---------- */
+.hidden { display: none !important; }
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-0 { margin-bottom: 0; }
+.mb-2 { margin-bottom: 16px; }
+.flex { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* ---------- 4. Buttons ---------- */
+.btn {
+  display: inline-block;
+  padding: 9px 18px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.925rem;
+  border: 1px solid var(--forest);
+  border-radius: var(--radius);
+  background: var(--forest);
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  line-height: 1.3;
+}
+.btn:hover { background: var(--forest-dark); border-color: var(--forest-dark); color: #fff; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-outline { background: transparent; color: var(--forest); }
+.btn-outline:hover { background: var(--sage-pale); color: var(--forest-dark); }
+
+.btn-secondary { background: var(--sage-light); border-color: var(--sage-light); color: var(--forest-dark); }
+.btn-secondary:hover { background: #cfdac5; border-color: #cfdac5; color: var(--forest-dark); }
+
+.btn-danger { background: var(--danger); border-color: var(--danger); }
+.btn-danger:hover { background: #7f3222; border-color: #7f3222; }
+
+.btn-small { padding: 5px 12px; font-size: 0.85rem; }
+.btn-block { display: block; width: 100%; }
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--forest);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- 5. Forms ---------- */
+.form-group { margin-bottom: 16px; }
+
+label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+label .optional { font-weight: normal; color: var(--muted); }
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="search"],
+input[type="datetime-local"],
+input[type="file"],
+select,
+textarea {
+  width: 100%;
+  padding: 9px 11px;
+  font: inherit;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+textarea { min-height: 96px; resize: vertical; }
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--sage);
+  outline-offset: 0;
+  border-color: var(--forest-light);
+}
+.input-error { border-color: var(--danger) !important; }
+.field-error { color: var(--danger); font-size: 0.83rem; margin-top: 4px; }
+.hint { color: var(--muted); font-size: 0.83rem; margin-top: 4px; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+}
+
+/* ---------- 6. Cards, panels ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.card + .card { margin-top: 20px; }
+.card-title {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--forest-dark);
+  margin: 0 0 14px;
+}
+/* Card heading row with a link on the right */
+.card > .flex-between:first-child { margin-bottom: 14px; }
+.card > .flex-between:first-child .card-title { margin-bottom: 0; }
+
+/* ---------- 7. Tables ---------- */
+.table-wrap { width: 100%; overflow-x: auto; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.table th, .table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.table th {
+  background: var(--sage-pale);
+  color: var(--forest-dark);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.table tbody tr:hover { background: #faf9f4; }
+.table .empty-row td { text-align: center; color: var(--muted); padding: 24px; }
+
+/* ---------- 8. Badges (status / priority) ---------- */
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--sage-light);
+  color: var(--forest-dark);
+}
+.badge-SUBMITTED              { background: var(--info-bg); color: var(--info); }
+.badge-ASSIGNED               { background: var(--sage-light); color: var(--forest-dark); }
+.badge-IN_PROGRESS            { background: var(--warning-bg); color: var(--warning); }
+.badge-COMPLETION_CLAIMED     { background: #e8e4f0; color: #554a72; }
+.badge-COMMUNITY_VERIFICATION { background: #dfece9; color: #2e5f57; }
+.badge-VERIFIED               { background: var(--forest); color: #fff; }
+.badge-REOPENED               { background: var(--danger-bg); color: var(--danger); }
+.badge-REJECTED               { background: #e7e7e3; color: #5a5a55; }
+
+.badge-LOW    { background: #ecefe8; color: var(--muted); }
+.badge-MEDIUM { background: var(--sage-light); color: var(--forest-dark); }
+.badge-HIGH   { background: var(--warning-bg); color: var(--warning); }
+.badge-URGENT { background: var(--danger-bg); color: var(--danger); }
+
+.badge-overdue { background: var(--danger); color: #fff; }
+
+/* ---------- 9. Alerts and toast messages ---------- */
+.alert {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  margin-bottom: 16px;
+  font-size: 0.92rem;
+}
+.alert-success { background: var(--sage-pale); border-color: var(--sage); color: var(--forest-dark); }
+.alert-error   { background: var(--danger-bg); border-color: #e2b9ac; color: var(--danger); }
+.alert-info    { background: var(--info-bg); border-color: #c4d1dc; color: var(--info); }
+.alert-warning { background: var(--warning-bg); border-color: #e3cf9f; color: var(--warning); }
+
+#toastContainer {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 340px;
+}
+.toast {
+  padding: 11px 14px;
+  border-radius: var(--radius);
+  background: var(--forest-dark);
+  color: #fff;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.toast-error { background: var(--danger); }
+
+/* ---------- 10. Dialog (modal) ---------- */
+dialog {
+  width: min(760px, calc(100% - 24px));
+  max-height: calc(100vh - 40px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+dialog::backdrop { background: rgba(25, 35, 28, 0.45); }
+dialog.dialog-small { width: min(460px, calc(100% - 24px)); }
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--sage-pale);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.dialog-header h2 { font-size: 1.25rem; margin: 0; }
+.dialog-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 4px;
+}
+.dialog-body { padding: 20px; }
+
+/* ---------- 11. Detail lists, timeline, stepper ---------- */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 8px 14px;
+  margin: 0 0 16px;
+  font-size: 0.92rem;
+}
+.detail-grid dt { color: var(--muted); }
+.detail-grid dd { margin: 0; }
+
+.section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 22px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Progress stepper: Submitted -> Assigned -> ... -> Verified */
+.stepper {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.stepper li {
+  flex: 1 1 100px;
+  padding: 7px 8px;
+  font-size: 0.78rem;
+  text-align: center;
+  border-radius: var(--radius);
+  background: #ecede7;
+  color: var(--muted);
+  border: 1px solid transparent;
+}
+.stepper li.done { background: var(--sage-light); color: var(--forest-dark); }
+.stepper li.current { background: var(--forest); color: #fff; font-weight: 600; }
+.stepper li.problem { background: var(--danger-bg); color: var(--danger); font-weight: 600; }
+
+/* History timeline */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 18px;
+  border-left: 2px solid var(--sage-light);
+}
+.timeline li {
+  position: relative;
+  padding: 0 0 14px 12px;
+  font-size: 0.9rem;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -25px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sage);
+  border: 2px solid var(--surface);
+}
+.timeline .timeline-meta { color: var(--muted); font-size: 0.8rem; }
+
+/* Progress meter (recovery %) */
+.meter {
+  height: 8px;
+  background: #e7e9e1;
+  border-radius: 4px;
+  overflow: hidden;
+  min-width: 80px;
+}
+.meter span { display: block; height: 100%; background: var(--forest-light); }
+.meter-label { font-size: 0.82rem; color: var(--muted); }
+
+/* ---------- 12. Images: upload preview and evidence ---------- */
+.photo-box {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 8px;
+}
+.photo-box img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 280px;
+  object-fit: cover;        /* click the photo to see it uncropped */
+  background: #f1f1ec;
+  border-radius: 4px;
+}
+.photo-caption { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+.photo-placeholder {
+  border: 1px dashed var(--sage);
+  border-radius: var(--radius);
+  background: var(--sage-pale);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 34px 12px;
+}
+.evidence-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* ---------- 13. Public website header and footer ---------- */
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.site-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 64px;
+  gap: 12px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  letter-spacing: 0.06em;
+  color: var(--forest-dark);
+  text-decoration: none;
+}
+.brand svg { width: 26px; height: 26px; }
+
+.site-nav { display: flex; align-items: center; gap: 22px; }
+.site-nav a { text-decoration: none; color: var(--text); font-size: 0.93rem; }
+.site-nav a:hover, .site-nav a.active { color: var(--forest); }
+.site-nav .btn { color: #fff; }
+.site-nav .btn-outline { color: var(--forest); }
+.nav-toggle { display: none; }
+
+body > main { flex: 1 0 auto; width: 100%; }
+.site-footer {
+  position: relative;
+  background: var(--sage-light);
+  padding: 22px 0;
+  margin-top: 64px;
+  font-size: 0.87rem;
+  color: var(--forest-dark);
+}
+/* Stepped stone edge along the top of the footer */
+.site-footer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -12px;
+  height: 12px;
+  background: url("../assets/decor/steps.svg") repeat-x left bottom;
+}
+.footer-brand { display: inline-flex; align-items: center; gap: 10px; }
+.footer-brand img { width: 34px; height: auto; }
+.site-footer .link-button { color: var(--forest-dark); }
+
+/* ---------- 14. Home page sections ---------- */
+.hero {
+  background: var(--sage-pale);
+  border-bottom: 1px solid var(--border);
+  padding: 56px 0 48px;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 32px;
+  align-items: center;
+}
+.hero-art { width: 100%; max-width: 440px; justify-self: end; }
+.hero h1 { font-size: 2.3rem; max-width: 640px; }
+.hero p { max-width: 620px; font-size: 1.05rem; color: var(--muted); }
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+
+.section { padding: 48px 0 0; }
+/* Thin water-ripple line separating home page sections */
+.ripple-line {
+  height: 14px;
+  margin-bottom: 36px;
+  background: url("../assets/decor/ripple.svg") repeat-x left center;
+  opacity: 0.8;
+}
+.section-intro { max-width: 680px; color: var(--muted); }
+
+.three-col {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.three-col .card + .card { margin-top: 0; }
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  counter-reset: step;
+}
+.steps li {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 16px 16px 56px;
+  position: relative;
+  counter-increment: step;
+}
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 16px;
+  top: 15px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--forest);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.steps strong { display: block; margin-bottom: 2px; }
+.steps span { color: var(--muted); font-size: 0.9rem; }
+
+.stat-strip {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+.stat-strip div strong {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1.7rem;
+  font-weight: normal;
+  color: var(--forest-dark);
+}
+.stat-strip div span { font-size: 0.85rem; color: var(--muted); }
+
+/* ---------- 15. Auth pages (login / register) ---------- */
+.auth-page { padding: 48px 0; }
+.auth-card { max-width: 440px; margin: 0 auto; }
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1fr 440px;
+  gap: 40px;
+  align-items: start;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.auth-layout .auth-card { margin: 0; max-width: none; }
+.auth-layout .auth-card + .auth-card { margin-top: 20px; }
+.auth-aside {
+  background: var(--sage-pale);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+.auth-aside img { width: 100%; max-width: 380px; margin: 0 auto 18px; }
+.auth-aside h2 { font-size: 1.35rem; }
+.auth-aside p { color: var(--muted); margin-bottom: 0; }
+.auth-card h1 { font-size: 1.7rem; }
+.demo-accounts { font-size: 0.87rem; }
+.demo-accounts table { width: 100%; border-collapse: collapse; }
+.demo-accounts td { padding: 6px 4px; border-top: 1px solid var(--border); }
+
+/* ---------- 16. Responsive ---------- */
+@media (max-width: 860px) {
+  .three-col, .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-art { max-width: 360px; justify-self: start; }
+  .auth-layout { grid-template-columns: 1fr; }
+  .auth-aside { display: none; }
+}
+
+@media (max-width: 680px) {
+  h1 { font-size: 1.65rem; }
+  .hero { padding: 36px 0 32px; }
+  .hero h1 { font-size: 1.8rem; }
+  .form-row, .three-col, .steps, .evidence-grid, .before-after { grid-template-columns: minmax(0, 1fr); }
+  /* 16px stops iPhones zooming into a field when it is tapped
+     (that zoom leaves the page scrolled sideways) */
+  input, select, textarea { font-size: 16px; }
+  .hero-art { max-width: 300px; justify-self: center; }
+  .detail-grid { grid-template-columns: 1fr; gap: 2px; }
+  .detail-grid dd { margin-bottom: 8px; }
+
+  .nav-toggle {
+    display: inline-block;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    font: inherit;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .site-header .container { flex-wrap: wrap; }
+  .site-nav {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 6px 0 16px;
+  }
+  .site-nav.open { display: flex; }
+  #toastContainer { left: 12px; right: 12px; max-width: none; }
+}
+
+/* ---------- 17. Photos: gallery, picker, lightbox ---------- */
+/* Visually hidden but still usable (e.g. the file input inside the photo picker).
+   !important beats the general input[type="file"] { width: 100% } rule, which
+   previously made this input stretch off the right side of the screen. */
+.sr-only {
+  position: absolute !important;
+  left: 0;
+  top: 0;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+img[data-zoom] { cursor: zoom-in; }
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.gallery figure {
+  margin: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px;
+}
+.gallery img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #f1f1ec;
+}
+.gallery figcaption { font-size: 0.78rem; color: var(--muted); margin-top: 5px; }
+
+.photo-picker { display: flex; flex-direction: column; gap: 10px; }
+.thumb-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.thumb-grid:empty { display: none; }
+.thumb {
+  position: relative;
+  width: 130px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 4px;
+}
+.thumb img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 3px; }
+.thumb-size { display: block; font-size: 0.72rem; color: var(--muted); padding: 3px 2px 0; }
+.thumb-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--danger);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.thumb-remove:hover { background: var(--danger-bg); }
+
+.dropzone {
+  position: relative;       /* keeps the hidden file input inside the box */
+  display: block;
+  margin: 0;
+  padding: 18px 16px;
+  border: 1.5px dashed var(--sage);
+  border-radius: var(--radius);
+  background: var(--sage-pale);
+  text-align: center;
+  cursor: pointer;
+  font-weight: normal;
+}
+.dropzone strong { display: block; color: var(--forest); font-size: 0.95rem; }
+.dropzone span { display: block; color: var(--muted); font-size: 0.82rem; margin-top: 2px; }
+.dropzone:hover, .dropzone.dragging { background: var(--sage-light); border-color: var(--forest-light); }
+.photo-picker.input-error .dropzone { border-color: var(--danger); }
+
+.lightbox {
+  width: auto;
+  max-width: min(960px, calc(100% - 24px));
+  padding: 12px;
+  background: var(--surface);
+}
+.lightbox img { max-height: calc(100vh - 120px); width: auto; margin: 0 auto; border-radius: 4px; }
+.lightbox .dialog-close { position: absolute; top: 6px; right: 8px; background: var(--surface); border-radius: 50%; }
+.lightbox .photo-caption { text-align: center; margin: 8px 0 0; }
+
+/* Before / after pair (home page "From the field") */
+.before-after {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.before-after .photo-box img { max-height: none; aspect-ratio: 3 / 2; object-fit: cover; }
+.photo-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--forest);
+  margin-bottom: 6px;
+}
+
+/* Pond profile banner */
+.pond-banner {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--sage-pale);
+  margin-bottom: 22px;
+}
+.pond-banner img.pond-photo { width: 100%; max-height: 320px; object-fit: cover; }
+.pond-banner img.pond-art { width: 100%; max-width: 420px; margin: 18px auto; }
+
+@media (max-width: 680px) {
+  .before-after { grid-template-columns: 1fr; }
+}
+
+/* ---------- 18. Tables become stacked cards on small screens ----------
+   (up to 1020px wide). Each cell gets a data-label (added automatically by UI.labelTables in ui.js)
+   so the column name is shown next to the value. No sideways scrolling. */
+@media (max-width: 1020px) {
+  .table thead { display: none; }
+  .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+  .table tr {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 12px;
+    margin-bottom: 10px;
+  }
+  .table tbody tr:hover { background: #fff; }
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px dashed var(--border);
+    padding: 8px 0;
+    text-align: right;
+  }
+  .table td:last-child { border-bottom: none; }
+  .table td { overflow-wrap: anywhere; }
+  .table td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: left;
+  }
+  .table td[data-label=""]::before { content: none; }
+  .table td[data-label=""] { justify-content: flex-end; }
+  .table td > .meter { flex: 1 1 auto; max-width: 160px; }
+  .table .empty-row td { display: block; text-align: center; }
+  .table .empty-row td::before { content: none; }
+}
+
+/* ---------- 19. Home: pond status + live activity, field photos ---------- */
+.status-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+}
+.status-layout .card + .card { margin-top: 0; }
+
+.activity { list-style: none; margin: 0; padding: 0; }
+.activity li {
+  position: relative;
+  padding: 9px 0 9px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.87rem;
+}
+.activity li:last-child { border-bottom: none; }
+.activity li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 15px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sage);
+}
+.activity .activity-meta { display: block; color: var(--muted); font-size: 0.78rem; }
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.field-grid .card + .card { margin-top: 0; }
+
+.pond-cell { display: flex; align-items: center; gap: 10px; }
+.pond-cell img { width: 52px; height: 38px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border); flex: 0 0 auto; }
+
+.auth-aside .sketch-slot { max-width: 380px; margin: 0 auto 18px; }
+.pond-banner .sketch-slot { max-width: 420px; margin: 18px auto; }
+
+@media (max-width: 900px) {
+  .status-layout, .field-grid { grid-template-columns: minmax(0, 1fr); }
+}
+.big-number { font-family: var(--font-heading); font-size: 1.8rem; color: var(--forest-dark); }
+
+/* ---------- 20. Wide tables on laptop screens ----------
+   Between phone and large desktop, tables get tighter cells and
+   less important columns (class "opt") are hidden, so they fit
+   without sideways scrolling. */
+@media (min-width: 1021px) and (max-width: 1320px) {
+  .table th, .table td { padding: 8px 6px; }
+  .table th { white-space: normal; }
+}
+/* the home page table shares its row with the activity feed */
+.status-layout .table th, .status-layout .table td { padding: 8px 6px; }
+.status-layout .table th { white-space: normal; }
+
+/* action buttons in a table cell wrap onto two lines if space is short */
+.row-actions { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+@media (min-width: 1021px) and (max-width: 1200px) {
+  .table .opt { display: none; }
+}
+
+@media (max-width: 680px) {
+  .stat-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+  .stat-strip div span { display: block; font-size: 0.8rem; line-height: 1.3; }
+}
+
+/* ---------- 21. Full-screen layout ----------
+   Every page fills the screen: the home page is split into
+   full-screen sections, short pages stretch so the live pond
+   strip sits at the bottom of the window. */
+.eyebrow {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--forest-light);
+  margin: 0 0 8px;
+}
+
+/* a) Home page: one screen per section */
+.screen {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 72px 0;
+  scroll-margin-top: 0;
+}
+.screen > .container { width: 100%; }
+.home .section.screen { padding: 72px 0; }
+.home .screen h2 { font-size: 2.1rem; }
+.home .screen .ripple-line { margin-bottom: 28px; }
+.hero.screen { min-height: calc(100vh - 65px); min-height: calc(100svh - 65px); padding: 48px 0; }
+.hero.screen .hero-grid { grid-template-columns: 1fr 1.05fr; gap: 56px; }
+.hero.screen h1 { font-size: 3.1rem; line-height: 1.12; }
+.hero.screen p { font-size: 1.1rem; }
+.hero.screen .hero-art { max-width: 640px; }
+.home .site-footer { margin-top: 0; }
+
+/* last section ends with the water strip touching the footer */
+#ponds.screen { justify-content: flex-start; padding-bottom: 0; }
+#ponds.screen > .container { margin: auto; padding-bottom: 32px; }
+.screen-strip { width: 100%; height: 96px; margin-top: auto; flex: 0 0 auto; }
+.sketch-slot.screen-strip svg, .sketch-slot.page-strip svg { width: 100%; height: 100%; }
+
+/* dot navigation on the right (built by Motion.sectionDots) */
+.section-dots {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.section-dots a {
+  position: relative;
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--forest);
+  background: var(--off-white);
+  transition: background-color 0.3s, transform 0.3s;
+}
+.section-dots a.active { background: var(--forest); transform: scale(1.25); }
+.section-dots a span {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 0.78rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--forest-dark);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.section-dots a:hover span, .section-dots a:focus-visible span { opacity: 1; }
+
+/* small live icons on cards, drawings on the role cards */
+.sketch-slot.card-icon { width: 68px; margin: 0 0 12px -4px; }
+.role-card { padding-top: 0; overflow: hidden; }
+.role-card .sketch-slot.role-art { margin: 0 -20px 14px; width: auto; background: var(--sage-pale); border-bottom: 1px solid var(--border); }
+
+/* bigger step cards so "How it works" fills its screen */
+.home #howSteps { gap: 20px; }
+.home #howSteps li { padding: 24px 22px 26px 70px; min-height: 128px; }
+.home #howSteps li::before { width: 36px; height: 36px; left: 20px; top: 22px; font-size: 1rem; }
+.home #howSteps strong { font-size: 1.08rem; margin-bottom: 6px; }
+.home #howSteps span { font-size: 0.95rem; }
+
+/* b) Login and register: the form sits in the middle of the screen */
+.auth-page { display: flex; align-items: center; }
+.auth-page > .auth-layout { width: 100%; }
+@media (min-width: 861px) {
+  .auth-layout { align-items: center; max-width: 1040px; grid-template-columns: 1fr 440px; gap: 56px; }
+  .auth-aside { padding: 32px; }
+  .auth-aside .sketch-slot { max-width: 440px; }
+}
+
+/* c) Public pages: live pond strip just above the footer */
+.page-strip { width: 100%; height: 96px; margin-top: 0; flex: 0 0 auto; }
+.page-strip + .site-footer { margin-top: 0; }
+
+/* d) Smaller screens: sections can be taller than the screen */
+@media (max-width: 900px) {
+  .section-dots { display: none; }
+  .hero.screen .hero-grid { grid-template-columns: 1fr; gap: 24px; }
+  .hero.screen .hero-art { max-width: 420px; justify-self: start; }
+  .hero.screen h1 { font-size: 2.2rem; }
+}
+@media (max-width: 680px) {
+  .screen, .home .section.screen { padding: 56px 0; }
+  .hero.screen { padding: 32px 0 48px; }
+  .hero.screen h1 { font-size: 1.85rem; }
+  .home .screen h2 { font-size: 1.6rem; }
+  .screen-strip { height: 70px; }
+}
+/* landscape phones: do not force full-height sections */
+@media (max-height: 520px) {
+  .screen, .hero.screen { min-height: 0; }
+}
+.auth-page { padding: 24px 0; }
+.home .screen > .container { max-width: 1180px; }
+/* home screens: roomier cards and text so each section fills its screen */
+.home .screen .section-intro { font-size: 1.08rem; max-width: 760px; }
+.home .screen .three-col { gap: 24px; }
+.home .screen .three-col .card { padding: 28px 26px; }
+.home .screen .three-col .card h3 { font-size: 1.2rem; margin-bottom: 8px; }
+.home .screen .three-col .card p { font-size: 1rem; }
+.home .sketch-slot.card-icon { width: 92px; margin-bottom: 18px; }
+.home .role-card.card { padding-top: 0; }
+.home .role-card .sketch-slot.role-art { margin: 0 -26px 18px; }
+.home #howSteps li { min-height: 150px; }
+@media (max-width: 680px) {
+  .home .screen .three-col .card { padding: 22px 20px; }
+  .home .sketch-slot.card-icon { width: 72px; }
+  .home #howSteps li { min-height: 0; }
+}
+.site-nav a.btn.active { color: #fff; }  /* "Register" button on the register page */
+/* tablets: keep the three home cards in one row instead of 2 + 1 */
+@media (min-width: 681px) and (max-width: 860px) {
+  .home .screen .three-col { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .home .screen .three-col .card { padding: 20px 16px; }
+  .home .role-card .sketch-slot.role-art { margin: 0 -16px 14px; }
+  .home .sketch-slot.card-icon { width: 72px; }
+}
+
+/* ---------- 22. Large monitors: scale everything up a little ---------- */
+@media (min-width: 1600px) {
+  html { font-size: 18px; }
+  body { font-size: 16.5px; }
+  .container { max-width: 1280px; }
+  .home .screen > .container { max-width: 1400px; }
+  .hero.screen .hero-art { max-width: 760px; }
+  .home .sketch-slot.card-icon { width: 104px; }
+}
+@media (min-width: 2200px) {
+  html { font-size: 21px; }
+  .hero.screen .hero-grid { grid-template-columns: 1.1fr 0.9fr; }
+  .hero h1, .hero.screen h1 { max-width: 15em; }
+  .hero p { max-width: 34em; }
+  .section-intro, .home .screen .section-intro { max-width: 42em; }
+  .section-dots { right: 28px; gap: 16px; }
+  .section-dots a { width: 14px; height: 14px; }
+  body { font-size: 19px; }
+  .container { max-width: 1560px; }
+  .home .screen > .container { max-width: 1720px; }
+  .hero.screen .hero-art { max-width: 960px; }
+  .home .sketch-slot.card-icon { width: 124px; }
+  .brand { font-size: 1.4rem; }
+  .brand svg { width: 32px; height: 32px; }
+  .site-header .container { min-height: 78px; }
+  .hero.screen { min-height: calc(100vh - 79px); min-height: calc(100svh - 79px); }
+  .screen-strip, .page-strip { height: 130px; }
+}
+@media (min-width: 3000px) {
+  html { font-size: 25px; }
+  body { font-size: 22px; }
+  .container { max-width: 1900px; }
+  .home .screen > .container { max-width: 2100px; }
+  .hero.screen .hero-art { max-width: 1150px; }
+  .home .sketch-slot.card-icon { width: 150px; }
+  .site-header .container { min-height: 92px; }
+  .hero.screen { min-height: calc(100vh - 93px); min-height: calc(100svh - 93px); }
+  .screen-strip, .page-strip { height: 160px; }
+}
+/* very narrow phones (Galaxy Fold, old iPhone SE) */
+@media (max-width: 360px) {
+  .container { padding: 0 14px; }
+  .hero.screen h1 { font-size: 1.6rem; }
+  .home .screen h2 { font-size: 1.45rem; }
+  .hero-actions .btn { flex: 1 1 100%; text-align: center; }
+  .stat-strip { gap: 8px; }
+  .stat-strip div strong { font-size: 1.4rem; }
+}

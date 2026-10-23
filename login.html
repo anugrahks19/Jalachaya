@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log in - JALACHAYA</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/motion.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body data-root="" class="auth-shell">
+
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+      <nav class="site-nav" id="siteNav">
+        <a href="index.html">Home</a>
+        <a href="index.html#ponds">Ponds</a>
+        <a href="login.html" class="active">Log in</a>
+        <a href="register.html" class="btn btn-small">Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container auth-page">
+    <div class="auth-layout">
+      <aside class="auth-aside">
+        <div class="sketch-slot" data-sketch="kulam">
+          <img src="assets/decor/kulam.svg" alt="Line drawing of a stepped village pond">
+        </div>
+        <h2>Every pond complaint, on record.</h2>
+        <p>Citizens report problems, the Panchayat assigns the work, field workers fix it, and residents confirm it is done.</p>
+      </aside>
+
+      <div class="auth-form-panel">
+        <div class="card auth-card">
+          <h1>Log in</h1>
+          <p class="muted">Choose your role, then enter your email and password.</p>
+
+          <div id="loginMessage"></div>
+
+          <form id="loginForm" novalidate>
+            <div class="form-group">
+              <label for="loginRole">Log in as</label>
+              <select id="loginRole" name="role" required>
+                <option value="" disabled selected>Select your role</option>
+                <option value="COMMUNITY_MEMBER">Citizen</option>
+                <option value="PANCHAYAT_OFFICER">Panchayat officer</option>
+                <option value="FIELD_WORKER">Field worker</option>
+              </select>
+            </div>
+            <div class="auth-fields">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" autocomplete="current-password" required>
+            </div>
+            </div>
+            <button type="submit" class="btn btn-block" id="loginButton">Log in</button>
+          </form>
+
+          <div class="auth-links"><span>New citizen? <a href="register.html">Create an account</a></span><a href="reset-password.html">Forgot password?</a></div>
+
+        <section class="judge-accounts hidden" id="demoAccounts">
+          <h3>Try a demonstration account</h3>
+          <div class="flex" id="judgeAccountButtons"></div>
+        </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- live pond edge along the bottom of the screen (js/sketches.js) -->
+  <div class="sketch-slot page-strip" data-sketch="strip"></div>
+
+  <footer class="site-footer">
+    <div class="container flex-between">
+      <span class="footer-brand"><img src="assets/decor/lotus.svg" alt="">JALACHAYA &middot; Pond monitoring and pollution reporting system &middot; College project prototype</span>
+      <button type="button" class="link-button" data-reset-demo>Reset demo data</button>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/constants.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/sketches.js"></script>
+  <script src="js/motion.js"></script>
+  <script src="js/pages/login.js"></script>
+</body>
+</html>

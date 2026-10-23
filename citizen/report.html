@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report a problem - JALACHAYA</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/motion.css">
+</head>
+<body data-root="../">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="brand" href="../index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <span class="portal-name">Citizen portal</span>
+      <span class="demo-badge hidden">Demo mode</span>
+    </div>
+    <div class="topbar-user">
+      <span class="topbar-clock" id="topbarClock"></span>
+      <span id="userName"></span>
+      <button type="button" class="btn btn-small btn-outline" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Citizen menu">
+      <a href="dashboard.html">My complaints</a>
+      <a href="report.html" class="active">Report a problem</a>
+      <a href="verify.html">Verify work</a>
+      <a href="ponds.html">Public pond status</a>
+      <div class="sidebar-footer">
+        <div class="sketch-slot sidebar-art" data-sketch="lotus"></div>
+        <p class="demo-note hidden">Demo data is saved in this browser only.</p>
+        <button type="button" class="link-button small" data-reset-demo>Reset demo data</button>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="page-header has-art">
+        <div class="page-header-text">
+          <h1>Report a problem</h1>
+          <p>Tell the Panchayat about pollution or damage at a registered pond.</p>
+        </div>
+        <!-- live drawing (js/sketches.js) -->
+        <div class="sketch-slot header-art" data-sketch="phone"></div>
+      </div>
+
+      <div class="report-layout" id="reportLayout">
+      <!-- Report form -->
+      <form id="reportForm" class="card" novalidate>
+        <div id="formMessage"></div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pondId">Pond</label>
+            <select id="pondId" required>
+              <option value="">Loading ponds...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="category">Problem category</label>
+            <select id="category" required>
+              <option value="">Select category</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" maxlength="500" placeholder="What did you see? When did it start? Which part of the pond?" required></textarea>
+          <div class="hint"><span id="charCount">0</span> / 500 characters (minimum 15)</div>
+        </div>
+
+        <div class="form-group">
+          <label for="landmark">Nearest landmark <span class="optional">(optional)</span></label>
+          <input type="text" id="landmark" maxlength="120" placeholder="e.g. East steps, near the pump house">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="latitude">Latitude</label>
+            <input type="number" id="latitude" step="any" placeholder="Filled when you choose a pond">
+          </div>
+          <div class="form-group">
+            <label for="longitude">Longitude</label>
+            <input type="number" id="longitude" step="any" placeholder="Filled when you choose a pond">
+          </div>
+        </div>
+        <p class="hint" style="margin-top:-8px">
+          <button type="button" class="link-button" id="useLocationBtn">Use my current location</button>
+          <span id="locationStatus"></span>
+        </p>
+
+        <div class="form-group mt-2">
+          <label>Photos of the problem <span class="optional">(up to 3, recommended)</span></label>
+          <div id="reportPhotos"></div>
+          <div class="hint">Photos are resized in your browser before upload. Click a thumbnail to view it larger.</div>
+        </div>
+
+        <div class="flex mt-2">
+          <button type="submit" class="btn" id="submitBtn">Submit complaint</button>
+          <a href="dashboard.html" class="btn btn-outline">Cancel</a>
+        </div>
+      </form>
+
+      <!-- Sample photos and tips -->
+      <aside class="card" id="sampleAside">
+        <h3 class="card-title">Sample photos</h3>
+        <p class="small muted">Real examples of the kind of photo that helps the Panchayat act quickly. In demo mode you can attach one to try the form.</p>
+        <div class="sample-list" id="sampleList"></div>
+        <div class="section-label">Photo tips</div>
+        <ul class="tips">
+          <li>Show the whole problem area, not only a close-up.</li>
+          <li>Include a landmark such as steps, a pipe or a tree.</li>
+          <li>Take photos in daylight if you can.</li>
+        </ul>
+      </aside>
+      </div>
+
+      <!-- Shown after a successful submission -->
+      <div id="successPanel" class="card success-panel hidden">
+        <h2>Complaint submitted</h2>
+        <p class="muted mb-0">Your complaint ID is</p>
+        <div class="complaint-id" id="newComplaintId"></div>
+        <p class="muted">The Panchayat office will review it and assign a field worker. You can follow its progress from your dashboard.</p>
+        <div class="flex" style="justify-content:center">
+          <a href="dashboard.html" class="btn" id="viewComplaintLink">View my complaint</a>
+          <a href="report.html" class="btn btn-outline">Report another problem</a>
+        </div>
+      </div>
+      <!-- live pond edge along the bottom of the screen -->
+      <div class="sketch-slot page-strip main-strip" data-sketch="strip"></div>
+    </main>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/constants.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/sketches.js"></script>
+  <script src="../js/motion.js"></script>
+  <script src="../js/pages/report.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My complaints - JALACHAYA</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/motion.css">
+</head>
+<body data-root="../">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="brand" href="../index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <span class="portal-name">Citizen portal</span>
+      <span class="demo-badge hidden">Demo mode</span>
+    </div>
+    <div class="topbar-user">
+      <span class="topbar-clock" id="topbarClock"></span>
+      <span id="userName"></span>
+      <button type="button" class="btn btn-small btn-outline" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Citizen menu">
+      <a href="dashboard.html" class="active">My complaints</a>
+      <a href="report.html">Report a problem</a>
+      <a href="verify.html">Verify work</a>
+      <a href="ponds.html">Public pond status</a>
+      <div class="sidebar-footer">
+        <div class="sketch-slot sidebar-art" data-sketch="lotus"></div>
+        <p class="demo-note hidden">Demo data is saved in this browser only.</p>
+        <button type="button" class="link-button small" data-reset-demo>Reset demo data</button>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="page-header has-art citizen-complaints-header">
+        <div class="page-header-text">
+          <h1>My complaints</h1>
+          <p>Follow the progress of every problem you have reported.</p>
+          <div class="citizen-header-actions">
+            <span class="live-status" id="liveStatus"></span>
+            <a href="report.html" class="btn">Report a problem</a>
+          </div>
+        </div>
+        <!-- live drawing (js/sketches.js) -->
+        <div class="sketch-slot header-art" data-sketch="village"></div>
+      </div>
+
+      <div id="pageAlert"></div>
+
+      <div class="stat-grid">
+        <div class="stat-card stat-primary"><div class="stat-value" id="statTotal">-</div><div class="stat-label">Total reported</div></div>
+        <div class="stat-card"><div class="stat-value" id="statOpen">-</div><div class="stat-label">Being worked on</div></div>
+        <div class="stat-card"><div class="stat-value" id="statResolved">-</div><div class="stat-label">Verified as resolved</div></div>
+        <div class="stat-card"><div class="stat-value" id="statVerify">-</div><div class="stat-label"><a href="verify.html">Waiting for your check</a></div></div>
+      </div>
+
+      <div class="card">
+        <div class="filters">
+          <div class="form-group">
+            <label for="statusFilter">Status</label>
+            <select id="statusFilter">
+              <option value="">All statuses</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="searchInput">Search</label>
+            <input type="search" id="searchInput" placeholder="Complaint ID, pond or description">
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Complaint ID</th>
+                <th>Pond</th>
+                <th>Category</th>
+                <th>Reported</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="complaintTableBody">
+              <tr class="empty-row"><td colspan="6">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- live pond edge along the bottom of the screen -->
+      <div class="sketch-slot page-strip main-strip" data-sketch="strip"></div>
+    </main>
+  </div>
+
+  <!-- Complaint details dialog -->
+  <dialog id="complaintDialog" aria-labelledby="complaintDialogTitle">
+    <div class="dialog-header">
+      <h2 id="complaintDialogTitle">Complaint</h2>
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button>
+    </div>
+    <div class="dialog-body" id="complaintDialogBody"></div>
+  </dialog>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/constants.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/sketches.js"></script>
+  <script src="../js/motion.js"></script>
+  <script src="../js/pages/citizen-dashboard.js"></script>
+</body>
+</html>

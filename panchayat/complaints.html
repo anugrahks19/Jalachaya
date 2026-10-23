@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complaints - JALACHAYA</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/motion.css">
+</head>
+<body data-root="../">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="brand" href="../index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
+        JALACHAYA
+      </a>
+      <span class="portal-name">Panchayat office</span>
+      <span class="demo-badge hidden">Demo mode</span>
+    </div>
+    <div class="topbar-user">
+      <span class="topbar-clock" id="topbarClock"></span>
+      <span id="userName"></span>
+      <button type="button" class="btn btn-small btn-outline" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <nav class="sidebar" aria-label="Panchayat menu">
+      <a href="dashboard.html">Overview</a>
+      <a href="complaints.html" class="active">Complaints</a>
+      <a href="ponds.html">Ponds</a>
+      <a href="../index.html#ponds">Public site</a>
+      <div class="sidebar-footer">
+        <div class="sketch-slot sidebar-art" data-sketch="lotus"></div>
+        <p class="demo-note hidden">Demo data is saved in this browser only.</p>
+        <button type="button" class="link-button small" data-reset-demo>Reset demo data</button>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="page-header has-art">
+        <div class="page-header-text">
+          <h1>Complaints</h1>
+          <p>Review new complaints, assign field workers, check submitted work and escalate overdue tasks.</p>
+          <span class="live-status mt-1" id="liveStatus"></span>
+        </div>
+        <!-- live drawing (js/sketches.js) -->
+        <div class="sketch-slot header-art" data-sketch="office"></div>
+      </div>
+
+      <div class="card">
+        <form class="filters" id="filterForm">
+          <div class="form-group">
+            <label for="filterPond">Pond</label>
+            <select id="filterPond"><option value="">All ponds</option></select>
+          </div>
+          <div class="form-group">
+            <label for="filterCategory">Category</label>
+            <select id="filterCategory"><option value="">All categories</option></select>
+          </div>
+          <div class="form-group">
+            <label for="filterPriority">Priority</label>
+            <select id="filterPriority"><option value="">All priorities</option></select>
+          </div>
+          <div class="form-group">
+            <label for="filterStatus">Status</label>
+            <select id="filterStatus"><option value="">All statuses</option></select>
+          </div>
+          <div class="form-group">
+            <label for="filterSearch">Search</label>
+            <input type="search" id="filterSearch" placeholder="ID, reporter, text">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label" for="filterOverdue"><input type="checkbox" id="filterOverdue"> Overdue only</label>
+            <button type="button" class="link-button small" id="clearFiltersBtn">Clear filters</button>
+          </div>
+        </form>
+
+        <p class="small muted" id="resultCount"></p>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Pond</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assigned to</th>
+                <th>Deadline</th>
+                <th class="opt">Reported</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="complaintTableBody">
+              <tr class="empty-row"><td colspan="9">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- live pond edge along the bottom of the screen -->
+      <div class="sketch-slot page-strip main-strip" data-sketch="strip"></div>
+    </main>
+  </div>
+
+  <!-- Complaint details and actions -->
+  <dialog id="detailDialog" aria-labelledby="detailTitle">
+    <div class="dialog-header">
+      <h2 id="detailTitle">Complaint</h2>
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button>
+    </div>
+    <div class="dialog-body" id="detailBody"></div>
+  </dialog>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/constants.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/sketches.js"></script>
+  <script src="../js/motion.js"></script>
+  <script src="../js/pages/panchayat-complaints.js"></script>
+</body>
+</html>
