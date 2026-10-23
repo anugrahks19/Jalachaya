@@ -45,6 +45,7 @@
           <div id="loginMessage"></div>
 
           <form id="loginForm" novalidate>
+            <div class="auth-fields auth-role-fields" id="loginRoleFields">
             <div class="form-group">
               <label for="loginRole">Log in as</label>
               <select id="loginRole" name="role" required>
@@ -53,6 +54,17 @@
                 <option value="PANCHAYAT_OFFICER">Panchayat officer</option>
                 <option value="FIELD_WORKER">Field worker</option>
               </select>
+            </div>
+            <div class="form-group hidden" id="workerTeamGroup">
+              <label for="loginTeam">Field team</label>
+              <select id="loginTeam" name="team" disabled>
+                <option value="Team 1">Team 1</option>
+                <option value="Team 2">Team 2</option>
+                <option value="Team 3">Team 3</option>
+                <option value="Team 4">Team 4</option>
+                <option value="Team 5">Team 5</option>
+              </select>
+            </div>
             </div>
             <div class="auth-fields">
             <div class="form-group">

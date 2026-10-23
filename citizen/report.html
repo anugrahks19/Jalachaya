@@ -44,7 +44,7 @@
       <div class="page-header has-art">
         <div class="page-header-text">
           <h1>Report a problem</h1>
-          <p>Tell the Panchayat about pollution or damage at a registered pond.</p>
+          <p>Name the pond and tell the Panchayat where it is and what needs attention.</p>
         </div>
         <!-- live drawing (js/sketches.js) -->
         <div class="sketch-slot header-art" data-sketch="phone"></div>
@@ -57,10 +57,10 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="pondId">Pond</label>
-            <select id="pondId" required>
-              <option value="">Loading ponds...</option>
-            </select>
+            <label for="pondName">Pond name</label>
+            <input type="text" id="pondName" maxlength="150" minlength="3" placeholder="Enter the name people use for this pond" list="pondSuggestions" required>
+            <datalist id="pondSuggestions"></datalist>
+            <div class="hint">Type any pond name. You do not need to choose a registered pond.</div>
           </div>
           <div class="form-group">
             <label for="category">Problem category</label>
@@ -70,6 +70,10 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label for="pondWard">Ward / locality</label>
+          <input type="text" id="pondWard" maxlength="100" placeholder="e.g. Ward 3, Kunnamangalam" required>
+        </div>
         <div class="form-group">
           <label for="description">Description</label>
           <textarea id="description" maxlength="500" placeholder="What did you see? When did it start? Which part of the pond?" required></textarea>
@@ -84,11 +88,11 @@
         <div class="form-row">
           <div class="form-group">
             <label for="latitude">Latitude</label>
-            <input type="number" id="latitude" step="any" placeholder="Filled when you choose a pond">
+            <input type="number" id="latitude" step="any" placeholder="Optional: enter coordinates or use current location">
           </div>
           <div class="form-group">
             <label for="longitude">Longitude</label>
-            <input type="number" id="longitude" step="any" placeholder="Filled when you choose a pond">
+            <input type="number" id="longitude" step="any" placeholder="Optional: enter coordinates or use current location">
           </div>
         </div>
         <p class="hint" style="margin-top:-8px">

@@ -39,7 +39,7 @@ def main():
                 page.get_by_text(re.compile(r"\d+ unread")).wait_for()
                 if account["role"] == "PANCHAYAT_OFFICER":
                     health = requests.get(API + "/api/operations/health", headers=headers, timeout=10)
-                    assert health.ok and health.json()["migrationVersion"] == "7"
+                    assert health.ok and health.json()["migrationVersion"] == "10"
                 assert not errors, errors
                 evidence.append({"role": account["role"], "databaseRecords": len(records), "browser": "PASS"})
                 context.close()

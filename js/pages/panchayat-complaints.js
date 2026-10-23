@@ -171,8 +171,8 @@ function renderDetail(c) {
       '<dt>Reported on</dt><dd>' + UI.formatDateTime(c.createdAt) + '</dd>' +
       '<dt>Description</dt><dd>' + UI.escape(c.description) + '</dd>' +
       '<dt>Landmark</dt><dd>' + UI.escape(c.landmark || '-') + '</dd>' +
-      '<dt>Location</dt><dd>' + Number(c.latitude).toFixed(5) + ', ' + Number(c.longitude).toFixed(5) +
-        ' &middot; <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=' + c.latitude + '&mlon=' + c.longitude + '#map=18/' + c.latitude + '/' + c.longitude + '">map</a></dd>' +
+      '<dt>Location</dt><dd>' + (c.latitude == null || c.longitude == null ? 'Not provided' : Number(c.latitude).toFixed(5) + ', ' + Number(c.longitude).toFixed(5)) +
+        (c.latitude == null || c.longitude == null ? '' : ' &middot; <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=' + c.latitude + '&mlon=' + c.longitude + '#map=18/' + c.latitude + '/' + c.longitude + '">map</a>') + '</dd>' +
     '</dl>' +
     '<div class="section-label">Photos (' + c.images.length + ')</div>' +
     UI.gallery(c.images, 'No photos attached by the citizen');
@@ -203,6 +203,11 @@ function renderDetail(c) {
       }).join('') + '</ul>';
     }
 
+    if (t.deadlineAlerts && t.deadlineAlerts.length) {
+      html += '<div class="section-label">Automatic deadline alerts</div><ul class="note-list">' + t.deadlineAlerts.map(function (a) {
+        return '<li>L' + a.level + ' - ' + UI.escape(a.destination) + ' · ' + UI.escape(a.delivery_status) + '</li>';
+      }).join('') + '</ul>';
+    }
     if (t.evidence) {
       html += '<div class="section-label">Evidence submitted by field worker</div>' +
         '<div class="evidence-grid">' +
@@ -274,8 +279,10 @@ function renderActions(c) {
   if (c.status === 'SUBMITTED' || c.status === 'REOPENED') {
     const defaultDeadline = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
     defaultDeadline.setHours(17, 0, 0, 0);
-    const workerOptions = workers.map(function (w) {
-      return '<option value="' + w.id + '">' + UI.escape(w.name) + ' - ' + UI.escape(w.team) + ' (' + w.openTasks + ' open)</option>';
+    const workerOptions = workers.slice().sort(function (a, b) {
+      return (a.team || '').localeCompare(b.team || '', undefined, { numeric: true }) || a.name.localeCompare(b.name);
+    }).map(function (w) {
+      return '<option value="' + w.id + '">' + UI.escape(w.team || 'Unassigned team') + ' - ' + UI.escape(w.name) + ' (Lead) · ' + (w.openTasks ? w.openTasks + ' active task' + (w.openTasks === 1 ? '' : 's') : 'No active tasks') + '</option>';
     }).join('');
     const priorityOptions = Object.keys(PRIORITIES).map(function (k) {
       return '<option value="' + k + '"' + (k === c.priority ? ' selected' : '') + '>' + PRIORITIES[k] + '</option>';
@@ -284,8 +291,8 @@ function renderActions(c) {
     return '<div class="section-label">Assign field worker</div>' +
       '<form id="assignForm" novalidate>' +
         '<div class="form-row">' +
-          '<div class="form-group"><label for="assignWorker">Field worker</label>' +
-            '<select id="assignWorker"><option value="">Select worker</option>' + workerOptions + '</select></div>' +
+          '<div class="form-group"><label for="assignWorker">Field team and lead</label>' +
+            '<select id="assignWorker"><option value="">Select field team</option>' + workerOptions + '</select></div>' +
           '<div class="form-group"><label for="assignPriority">Priority</label>' +
             '<select id="assignPriority">' + priorityOptions + '</select></div>' +
         '</div>' +

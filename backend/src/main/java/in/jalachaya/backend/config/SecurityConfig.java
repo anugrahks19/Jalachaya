@@ -62,7 +62,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    Converter<Jwt, JwtAuthenticationToken> jwtAuthenticationConverter(UserRepository users) {
+    Converter<Jwt, JwtAuthenticationToken> jwtAuthenticationConverter(UserRepository users, in.jalachaya.backend.user.WorkerTeams teams) {
         return jwt -> {
             long id;
             try {
@@ -79,6 +79,17 @@ public class SecurityConfig {
             if ((version == null ? 0 : version.intValue()) != user.getAuthVersion()) {
                 throw new BadCredentialsException("Your password changed. Please log in again.");
             }
+            Number loginId = jwt.getClaim("loginUserId");
+            if (loginId != null && loginId.longValue() != id) {
+                User login = users.findById(loginId.longValue()).orElseThrow(() -> new BadCredentialsException("Invalid login account."));
+                Number loginVersion = jwt.getClaim("loginAuthVersion");
+                if (!teams.allowed(login, user) || loginVersion == null || login.getAuthVersion() != loginVersion.intValue())
+                    throw new BadCredentialsException("Team access changed. Please log in again.");
+            }
+            String selectedTeam = jwt.getClaimAsString("team");
+            if (user.getRole() == in.jalachaya.backend.user.Role.FIELD_WORKER && selectedTeam != null
+                    && !selectedTeam.equals(user.getTeam() == null ? "" : user.getTeam()))
+                throw new BadCredentialsException("Team changed. Please log in again.");
             return new JwtAuthenticationToken(jwt,
                     List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
                     user.getEmail());

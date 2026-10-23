@@ -36,7 +36,7 @@ async function http(method, path, body) {
   const options = { method: method, headers: {} };
 
   const token = Auth.getToken();
-  if (token && !path.startsWith('/api/auth/') && !path.startsWith('/api/public/')) {
+  if (token && !path.startsWith('/api/auth/')) {
     options.headers['Authorization'] = 'Bearer ' + token; // JWT from login
   }
 
@@ -74,8 +74,8 @@ async function http(method, path, body) {
 const API = {
 
   /* ---------- Authentication ---------- */
-  login(email, password, role) {
-    return http('POST', '/api/auth/login', { email: email, password: password, role: role });
+  login(email, password, role, team) {
+    return http('POST', '/api/auth/login', { email: email, password: password, role: role, team: team });
   },
 
   register(data) {
@@ -201,6 +201,10 @@ const API = {
   escalateTask(taskId, reason) {
     return http('POST', '/api/escalations', { taskId: taskId, reason: reason });
   },
+
+  getAutomaticAlerts() { return http('GET', '/api/escalations/automatic'); },
+  saveAuthorityContacts(data) { return http('POST', '/api/escalations/settings', data); },
+  testAuthorityEmail() { return http('POST', '/api/escalations/test-email', {}); },
 
   /* ---------- Dashboard ---------- */
   getDashboardSummary() {

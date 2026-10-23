@@ -229,6 +229,30 @@ try {
     $env:BOOTSTRAP_OFFICER_PASSWORD = $officerPassword
     $env:BOOTSTRAP_WORKER_EMAIL = $workerEmail
     $env:BOOTSTRAP_WORKER_PASSWORD = $workerPassword
+    $mailFile = Join-Path $runtime 'mail-settings.json'
+    if (Test-Path -LiteralPath $mailFile) {
+        $mailSettings = Get-Content -LiteralPath $mailFile -Raw | ConvertFrom-Json
+        $env:ALERT_SMTP_HOST = $mailSettings.host
+        $env:ALERT_SMTP_PORT = [string]$mailSettings.port
+        $env:ALERT_SMTP_USERNAME = $mailSettings.username
+        $env:ALERT_MAIL_FROM = $mailSettings.from
+        $env:ALERT_SMTP_PASSWORD = Get-Plain (ConvertTo-SecureString $mailSettings.password)
+        $env:ALERT_SMTP_STARTTLS = 'true'
+    }
+    # Read only approved SMTP keys; never execute the private .env file as code.
+    $mailEnvFile = Join-Path $backend '.env'
+    $mailKeys = @('ALERT_SMTP_HOST','ALERT_SMTP_PORT','ALERT_SMTP_USERNAME','ALERT_SMTP_PASSWORD','ALERT_MAIL_FROM','ALERT_SMTP_STARTTLS')
+    if (Test-Path -LiteralPath $mailEnvFile) {
+        foreach ($line in Get-Content -LiteralPath $mailEnvFile) {
+            $trimmed = $line.Trim()
+            if (-not $trimmed -or $trimmed.StartsWith('#')) { continue }
+            $parts = $trimmed -split '=', 2
+            if ($parts.Count -ne 2 -or $mailKeys -notcontains $parts[0].Trim()) { continue }
+            $value = $parts[1].Trim()
+            if ($value.Length -ge 2 -and (($value.StartsWith('"') -and $value.EndsWith('"')) -or ($value.StartsWith("'") -and $value.EndsWith("'")))) { $value = $value.Substring(1, $value.Length - 2) }
+            if (-not [string]::IsNullOrWhiteSpace($value)) { [Environment]::SetEnvironmentVariable($parts[0].Trim(), $value, 'Process') }
+        }
+    }
     $env:AI_ENABLED = 'true'
     $env:ENABLE_JUDGE_DEMO = if ($TestMode) { 'false' } else { 'true' }
     $env:DEMO_SAMPLES_DIR = Join-Path $root 'assets\samples'

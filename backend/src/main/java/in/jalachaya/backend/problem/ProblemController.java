@@ -25,13 +25,14 @@ public class ProblemController {
     public ProblemController(ProblemService problems) { this.problems = problems; }
 
     @PostMapping(consumes = "multipart/form-data")
-    public Map<String, Object> create(@AuthenticationPrincipal Jwt jwt, @RequestParam long pondId,
+    public Map<String, Object> create(@AuthenticationPrincipal Jwt jwt, @RequestParam(required = false) Long pondId,
+            @RequestParam(required = false) String pondName, @RequestParam(required = false) String pondWard,
             @RequestParam String category, @RequestParam String description,
             @RequestParam(required = false) String landmark,
             @RequestParam(required = false) BigDecimal latitude,
             @RequestParam(required = false) BigDecimal longitude,
             @RequestParam(required = false, name = "images") List<MultipartFile> images) {
-        return problems.create(id(jwt), pondId, category, description, landmark, latitude, longitude,
+        return problems.report(id(jwt), pondId, pondName, pondWard, category, description, landmark, latitude, longitude,
                 images == null ? List.of() : images);
     }
 

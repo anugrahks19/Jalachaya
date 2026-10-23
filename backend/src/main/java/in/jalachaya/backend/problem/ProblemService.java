@@ -33,6 +33,8 @@ public class ProblemService {
     private static final Set<String> PRIORITIES = Set.of("LOW", "MEDIUM", "HIGH", "URGENT");
     private static final Set<String> STATUSES = Set.of("SUBMITTED", "ASSIGNED", "IN_PROGRESS",
             "COMPLETION_CLAIMED", "COMMUNITY_VERIFICATION", "VERIFIED", "REOPENED", "REJECTED");
+    private final in.jalachaya.backend.common.DataScope scope;
+    public boolean currentDemo() { return scope.currentDemo(); }
     private final JdbcTemplate jdbc;
     private final PondRepository ponds;
     private final UserRepository users;
@@ -41,7 +43,8 @@ public class ProblemService {
     private final AiJobService aiJobs;
 
     public ProblemService(JdbcTemplate jdbc, PondRepository ponds, UserRepository users,
-            ProblemImageStore images, WorkflowView workflowViews, AiJobService aiJobs) {
+            ProblemImageStore images, WorkflowView workflowViews, AiJobService aiJobs, in.jalachaya.backend.common.DataScope scope) {
+        this.scope = scope;
         this.jdbc = jdbc;
         this.ponds = ponds;
         this.users = users;
@@ -50,12 +53,36 @@ public class ProblemService {
         this.aiJobs = aiJobs;
     }
 
+    /** A citizen can name an unregistered pond; its record and complaint commit together. */
+    @Transactional
+    public Map<String, Object> report(long actorId, Long pondId, String pondName, String pondWard,
+            String category, String description, String landmark, BigDecimal latitude, BigDecimal longitude,
+            List<MultipartFile> photos) {
+        User reporter = actor(actorId, Role.COMMUNITY_MEMBER);
+        if (pondId == null) {
+            String name = clean(pondName), ward = clean(pondWard);
+            if (name.length() < 3 || name.length() > 150 || ward.isEmpty() || ward.length() > 100)
+                throw bad("Enter a pond name (3 to 150 characters) and ward or locality (up to 100 characters).");
+            validateCoordinates(latitude, longitude);
+            Pond pond = ponds.findByNameIgnoreCaseAndWardIgnoreCaseAndDemo(name, ward, reporter.isDemo()).orElse(null);
+            if (pond == null) {
+                pond = new Pond(); pond.setName(name); pond.setWard(ward); pond.setDemo(reporter.isDemo());
+                pond.setLatitude(latitude); pond.setLongitude(longitude);
+                pond.setDescription("Location reported by a citizen. Pond details can be reviewed by the Panchayat.");
+                pond = ponds.saveAndFlush(pond);
+            }
+            pondId = pond.getId();
+        }
+        return create(actorId, pondId, category, description, landmark, latitude, longitude, photos);
+    }
+
     @Transactional
     public Map<String, Object> create(long actorId, long pondId, String category, String description,
             String landmark, BigDecimal latitude, BigDecimal longitude, List<MultipartFile> photos) {
         User actor = actor(actorId, Role.COMMUNITY_MEMBER);
+        scope.requirePond(pondId, actor.isDemo());
         Pond pond = ponds.findById(pondId).filter(Pond::isActive).orElseThrow(() ->
-                bad("Please select a valid pond."));
+                bad("This pond is not available for reporting."));
         if (category == null || !CATEGORIES.contains(category)) throw bad("Please select a problem category.");
         String cleanDescription = clean(description);
         if (cleanDescription.length() < 15 || cleanDescription.length() > 2000) {
@@ -86,6 +113,7 @@ public class ProblemService {
     @Transactional
     public Map<String, Object> addImage(long actorId, long id, MultipartFile image, String caption) {
         User actor = actor(actorId, Role.COMMUNITY_MEMBER);
+        scope.requireProblem(id, actor.isDemo());
         Map<String, Object> problem = lockedProblem(id);
         if (number(problem, "reporter_id") != actorId) throw forbidden("You can only add photos to your own complaints.");
         String status = string(problem, "status");
@@ -100,6 +128,7 @@ public class ProblemService {
         jdbc.update("INSERT INTO problem_images (problem_id, path, caption, added_by_id, created_at) "
                 + "VALUES (?, ?, ?, ?, ?)", id, path, cleanCaption, actorId, now);
         history(id, status, "Citizen added a photo: " + cleanCaption + ".", actorId, now);
+        aiJobs.enqueueClassification(id);
         jdbc.update("UPDATE problems SET updated_at = ? WHERE id = ?", now, id);
         return view(id, actor);
     }
@@ -113,8 +142,8 @@ public class ProblemService {
         if (category != null && !CATEGORIES.contains(category)) throw bad("Invalid category.");
         if (priority != null && !PRIORITIES.contains(priority)) throw bad("Invalid priority.");
         if (status != null && !STATUSES.contains(status)) throw bad("Invalid status.");
-        String sql = mine ? "SELECT id FROM problems WHERE reporter_id = ? ORDER BY created_at DESC, id DESC"
-                : "SELECT id FROM problems ORDER BY created_at DESC, id DESC";
+        String sql = mine ? "SELECT id FROM problems WHERE reporter_id = ? AND " + scope.problems("", actor.isDemo()) + " ORDER BY created_at DESC, id DESC"
+                : "SELECT id FROM problems WHERE " + scope.problems("", actor.isDemo()) + " ORDER BY created_at DESC, id DESC";
         List<Long> ids = mine ? jdbc.queryForList(sql, Long.class, actorId) : jdbc.queryForList(sql, Long.class);
         String term = clean(search).toLowerCase();
         List<Map<String, Object>> result = new ArrayList<>();
@@ -138,6 +167,7 @@ public class ProblemService {
     @Transactional(readOnly = true)
     public Map<String, Object> get(long actorId, long id) {
         User actor = user(actorId);
+        scope.requireProblem(id, actor.isDemo());
         Map<String, Object> problem = rawProblem(id);
         boolean allowed = actor.getRole() == Role.PANCHAYAT_OFFICER
                 || (actor.getRole() == Role.COMMUNITY_MEMBER && number(problem, "reporter_id") == actorId)
@@ -150,6 +180,7 @@ public class ProblemService {
     @Transactional
     public Map<String, Object> reject(long actorId, long id, String reason) {
         User actor = actor(actorId, Role.PANCHAYAT_OFFICER);
+        scope.requireProblem(id, actor.isDemo());
         Map<String, Object> problem = lockedProblem(id);
         String status = string(problem, "status");
         if (!status.equals("SUBMITTED") && !status.equals("REOPENED")) {
@@ -168,12 +199,13 @@ public class ProblemService {
     public Map<String, Object> assign(long actorId, long problemId, long workerId, Instant deadline,
             String priority, String instructions) {
         User officer = actor(actorId, Role.PANCHAYAT_OFFICER);
+        scope.requireProblem(problemId, officer.isDemo());
         Map<String, Object> problem = lockedProblem(problemId);
         String status = string(problem, "status");
         if (!status.equals("SUBMITTED") && !status.equals("REOPENED")) {
             throw conflict("This complaint has already been assigned.");
         }
-        User worker = users.findById(workerId).filter(u -> u.isActive() && u.getRole() == Role.FIELD_WORKER)
+        User worker = users.findById(workerId).filter(u -> u.isActive() && u.getRole() == Role.FIELD_WORKER && u.isDemo() == officer.isDemo())
                 .orElseThrow(() -> bad("Please select a field worker."));
         if (deadline == null || !deadline.isAfter(Instant.now())) throw bad("Deadline must be a future date and time.");
         if (priority == null || !PRIORITIES.contains(priority)) throw bad("Please select a priority.");
@@ -233,7 +265,8 @@ public class ProblemService {
                 weightedCompletion += weight * completion;
                 totalWeight += weight;
             }
-            result.put("recoveryPercent", (int) Math.round(weightedCompletion / totalWeight * 100));
+            boolean allVerified = weights.stream().allMatch(row -> "VERIFIED".equals(row.get("status")));
+            result.put("recoveryPercent", Math.min(allVerified ? 100 : 99, (int) Math.round(weightedCompletion / totalWeight * 100)));
         }
         return result;
     }
@@ -257,7 +290,7 @@ public class ProblemService {
     public List<Map<String, Object>> publicActivity() {
         List<Map<String, Object>> rows = jdbc.queryForList("SELECT h.id, h.problem_id, h.status, h.note, h.created_at, "
                 + "p.pond_id, d.name AS pond_name FROM problem_history h JOIN problems p ON p.id = h.problem_id "
-                + "JOIN ponds d ON d.id = p.pond_id WHERE p.status <> 'REJECTED' ORDER BY h.created_at DESC, h.id DESC");
+                + "JOIN ponds d ON d.id = p.pond_id WHERE h.system_event = FALSE AND p.status <> 'REJECTED' AND " + scope.problems("p", scope.currentDemo()) + " ORDER BY h.created_at DESC, h.id DESC");
         List<Map<String, Object>> result = new ArrayList<>();
         for (Map<String, Object> row : rows) {
             String status = string(row, "status");
@@ -294,7 +327,7 @@ public class ProblemService {
                 + "e.before_image_path, e.after_image_path, e.remarks FROM problems p "
                 + "JOIN ponds d ON d.id = p.pond_id JOIN tasks t ON t.problem_id = p.id AND t.active = TRUE "
                 + "JOIN task_evidence e ON e.task_id = t.id "
-                + "WHERE p.status = 'VERIFIED' AND e.id = "
+                + "WHERE p.status = 'VERIFIED' AND " + scope.problems("p", scope.currentDemo()) + " AND e.id = "
                 + "(SELECT MAX(e2.id) FROM task_evidence e2 WHERE e2.task_id = t.id) "
                 + "ORDER BY p.updated_at DESC, p.id DESC LIMIT 2");
         return rows.stream().map(row -> {
@@ -313,7 +346,7 @@ public class ProblemService {
     @Transactional(readOnly = true)
     public int openTasks(long workerId) {
         return jdbc.queryForObject("SELECT COUNT(*) FROM tasks t JOIN problems p ON p.id = t.problem_id "
-                + "WHERE t.worker_id = ? AND t.active = TRUE AND p.status IN ('ASSIGNED', 'IN_PROGRESS')",
+                + "WHERE t.worker_id = ? AND t.active = TRUE AND " + scope.problems("p", scope.demo(workerId)) + " AND p.status IN ('ASSIGNED', 'IN_PROGRESS')",
                 Integer.class, workerId);
     }
 
@@ -357,13 +390,13 @@ public class ProblemService {
             return image;
         }).toList());
         List<Map<String, Object>> historyRows = jdbc.queryForList("SELECT h.status, h.note, h.created_at, "
-                + "u.name, u.role FROM problem_history h JOIN app_users u ON u.id = h.actor_id "
+                + "CASE WHEN h.system_event THEN 'Automatic deadline monitor' ELSE u.name END AS name, CASE WHEN h.system_event THEN 'SYSTEM' ELSE u.role END AS role FROM problem_history h JOIN app_users u ON u.id = h.actor_id "
                 + "WHERE h.problem_id = ? ORDER BY h.id", id);
         out.put("history", historyRows.stream().map(item -> {
             Map<String, Object> event = new LinkedHashMap<>();
             event.put("status", item.get("status"));
             String note = string(item, "note");
-            if (viewer.getRole() == Role.COMMUNITY_MEMBER && string(item, "status").equals("ASSIGNED")) {
+            if (viewer.getRole() == Role.COMMUNITY_MEMBER && !"SYSTEM".equals(item.get("role")) && string(item, "status").equals("ASSIGNED")) {
                 note = "Field worker assigned.";
             } else if (viewer.getRole() == Role.COMMUNITY_MEMBER && note.startsWith("Returned to field worker")) {
                 note = "Work returned to field team.";
@@ -374,7 +407,7 @@ public class ProblemService {
             String by = string(item, "name");
             if (viewer.getRole() == Role.COMMUNITY_MEMBER) {
                 String role = string(item, "role");
-                by = role.equals("FIELD_WORKER") ? "Field team" : role.equals("PANCHAYAT_OFFICER")
+                by = role.equals("SYSTEM") ? "Automatic deadline monitor" : role.equals("FIELD_WORKER") ? "Field team" : role.equals("PANCHAYAT_OFFICER")
                         ? "Panchayat office" : by.equals(viewer.getName()) ? "You" : "Community member";
             }
             event.put("by", by);
@@ -470,6 +503,8 @@ public class ProblemService {
     private String code(long id) { return "JC-" + (1000 + id); }
     private String clean(String value) { return value == null ? "" : value.trim(); }
     private void validateCoordinates(BigDecimal lat, BigDecimal lng) {
+        if (lat == null && lng == null) return;
+        if (lat == null || lng == null) throw bad("Provide both latitude and longitude, or leave both blank.");
         if (lat.compareTo(BigDecimal.valueOf(-90)) < 0 || lat.compareTo(BigDecimal.valueOf(90)) > 0
                 || lng.compareTo(BigDecimal.valueOf(-180)) < 0 || lng.compareTo(BigDecimal.valueOf(180)) > 0) {
             throw bad("Invalid coordinates.");

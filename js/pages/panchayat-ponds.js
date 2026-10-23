@@ -44,7 +44,7 @@ async function loadPonds() {
         '<td><strong>' + UI.escape(p.name) + '</strong></td>' +
         '<td>' + UI.escape(p.ward) + (p.village ? ', ' + UI.escape(p.village) : '') + '</td>' +
         '<td class="opt">' + (p.areaAcres ? p.areaAcres + ' ac' : '-') + '</td>' +
-        '<td class="small opt">' + p.latitude.toFixed(4) + ', ' + p.longitude.toFixed(4) + '</td>' +
+        '<td class="small opt">' + (p.latitude == null || p.longitude == null ? 'Not provided' : p.latitude.toFixed(4) + ', ' + p.longitude.toFixed(4)) + '</td>' +
         '<td>' + p.activeComplaints + '</td>' +
         '<td style="min-width:120px">' + UI.meter(p.recoveryPercent) + '</td>' +
         '<td>' + (p.active ? '<span class="badge badge-ASSIGNED">Active</span>' : '<span class="badge badge-REJECTED">Inactive</span>') + '</td>' +
@@ -84,8 +84,8 @@ function openPondForm(pondId) {
     pondInputs.ward.value = p.ward;
     pondInputs.village.value = p.village || '';
     pondInputs.areaAcres.value = p.areaAcres || '';
-    pondInputs.latitude.value = p.latitude;
-    pondInputs.longitude.value = p.longitude;
+    pondInputs.latitude.value = p.latitude == null ? '' : p.latitude;
+    pondInputs.longitude.value = p.longitude == null ? '' : p.longitude;
     pondInputs.description.value = p.description || '';
     if (p.imageUrl) {
       current.innerHTML = '<div class="current-photo">' +

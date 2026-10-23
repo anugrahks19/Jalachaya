@@ -101,3 +101,6 @@ body.auth-shell { min-height: 100svh; display: grid; grid-template-rows: auto 1f
   .auth-shell > main.auth-page { padding-top: 8px; padding-bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { .auth-track { transition: none; } }
+
+.auth-role-fields { grid-template-columns: minmax(0, 1fr); }
+.auth-role-fields.has-worker-team { grid-template-columns: repeat(2, minmax(0, 1fr)); }

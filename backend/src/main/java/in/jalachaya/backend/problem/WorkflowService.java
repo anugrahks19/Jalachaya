@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class WorkflowService {
+    private final in.jalachaya.backend.common.DataScope scope;
     private final JdbcTemplate jdbc;
     private final UserRepository users;
     private final ProblemImageStore images;
@@ -30,7 +31,8 @@ public class WorkflowService {
     private final AiJobService aiJobs;
 
     public WorkflowService(JdbcTemplate jdbc, UserRepository users, ProblemImageStore images, WorkflowView views,
-            AiJobService aiJobs) {
+            AiJobService aiJobs, in.jalachaya.backend.common.DataScope scope) {
+        this.scope = scope;
         this.jdbc = jdbc;
         this.users = users;
         this.images = images;
@@ -49,6 +51,7 @@ public class WorkflowService {
     public Map<String, Object> start(long actorId, long taskId, String status) {
         actor(actorId, Role.FIELD_WORKER);
         if (!"IN_PROGRESS".equals(status)) throw bad("Only IN_PROGRESS is allowed.");
+        requireScope(actorId, taskId);
         LockedTask locked = lock(taskId);
         ownActive(locked, actorId);
         if (!locked.status().equals("ASSIGNED")) throw conflict("This task has already been started.");
@@ -61,6 +64,7 @@ public class WorkflowService {
     @Transactional
     public Map<String, Object> note(long actorId, long taskId, String text, MultipartFile image) {
         actor(actorId, Role.FIELD_WORKER);
+        requireScope(actorId, taskId);
         LockedTask locked = lock(taskId);
         ownActive(locked, actorId);
         if (!locked.status().equals("ASSIGNED") && !locked.status().equals("IN_PROGRESS")) {
@@ -78,6 +82,7 @@ public class WorkflowService {
     public Map<String, Object> complete(long actorId, long taskId, MultipartFile before,
             MultipartFile after, String remarks) {
         actor(actorId, Role.FIELD_WORKER);
+        requireScope(actorId, taskId);
         LockedTask locked = lock(taskId);
         ownActive(locked, actorId);
         if (!locked.status().equals("IN_PROGRESS")) {
@@ -105,6 +110,7 @@ public class WorkflowService {
     @Transactional
     public long review(long actorId, long taskId, String decision, String comment) {
         actor(actorId, Role.PANCHAYAT_OFFICER);
+        requireScope(actorId, taskId);
         LockedTask locked = lock(taskId);
         if (!locked.active() || !locked.status().equals("COMPLETION_CLAIMED")) {
             throw conflict("There is no submitted work to review.");
@@ -133,7 +139,7 @@ public class WorkflowService {
         actor(actorId, Role.COMMUNITY_MEMBER);
         List<Map<String, Object>> rows = jdbc.queryForList("SELECT p.*, d.name AS pond_name, t.id AS task_id "
                 + "FROM problems p JOIN ponds d ON d.id = p.pond_id JOIN tasks t ON t.problem_id = p.id "
-                + "AND t.active = TRUE WHERE p.status = 'COMMUNITY_VERIFICATION' "
+                + "AND t.active = TRUE WHERE p.status = 'COMMUNITY_VERIFICATION' AND " + scope.problems("p", scope.demo(actorId)) + " "
                 + "ORDER BY p.created_at DESC, p.id DESC");
         List<Map<String, Object>> result = new ArrayList<>();
         for (Map<String, Object> row : rows) {
@@ -162,6 +168,7 @@ public class WorkflowService {
     public Map<String, Object> communityVerify(long actorId, long taskId, String decision,
             String comment, MultipartFile image) {
         actor(actorId, Role.COMMUNITY_MEMBER);
+        requireScope(actorId, taskId);
         LockedTask locked = lock(taskId);
         if (!locked.active() || !locked.status().equals("COMMUNITY_VERIFICATION")) {
             throw conflict("This work is no longer waiting for verification.");
@@ -202,6 +209,12 @@ public class WorkflowService {
                     + (cleanComment.isEmpty() ? "." : ": " + cleanComment), actorId, now);
         }
         return Map.of("status", decision.equals("DISPUTE") ? "REOPENED" : "VERIFIED");
+    }
+
+    private void requireScope(long actorId, long taskId) {
+        var ids = jdbc.queryForList("SELECT problem_id FROM tasks WHERE id = ?", Long.class, taskId);
+        if (ids.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found.");
+        scope.requireProblem(ids.get(0), scope.demo(actorId));
     }
 
     private LockedTask lock(long taskId) {

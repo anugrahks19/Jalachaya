@@ -5,6 +5,15 @@ UI.initPublicPage();
 const loginForm = document.getElementById('loginForm');
 const loginButton = document.getElementById('loginButton');
 const messageBox = document.getElementById('loginMessage');
+function updateTeamSelection() {
+  const worker = document.getElementById('loginRole').value === ROLES.WORKER;
+  document.getElementById('workerTeamGroup').classList.toggle('hidden', !worker);
+  document.getElementById('loginRoleFields').classList.toggle('has-worker-team', worker);
+  document.getElementById('loginTeam').disabled = !worker;
+  document.getElementById('loginTeam').required = worker;
+}
+document.getElementById('loginRole').addEventListener('change', updateTeamSelection);
+updateTeamSelection();
 
 // Already logged in? Go straight to the dashboard.
 const existingSession = Auth.getSession();
@@ -30,6 +39,8 @@ http('GET', '/api/public/demo-accounts').then(function (data) {
     button.textContent = account.label;
     button.addEventListener('click', function () {
       document.getElementById('loginRole').value = account.role;
+      document.getElementById('loginTeam').value = 'Team 1';
+      updateTeamSelection();
       document.getElementById('email').value = account.email;
       document.getElementById('password').value = account.password;
       document.getElementById('loginButton').focus();
@@ -58,7 +69,7 @@ loginForm.addEventListener('submit', async function (event) {
 
   UI.setLoading(loginButton, true, 'Logging in...');
   try {
-    const session = await API.login(email, password, roleInput.value);
+    const session = await API.login(email, password, roleInput.value, roleInput.value === ROLES.WORKER ? document.getElementById('loginTeam').value : undefined);
     Auth.save(session);
     window.location.href = redirectTarget(session.role);
   } catch (error) {

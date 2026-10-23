@@ -18,7 +18,7 @@ The link contains a random 256-bit token in its URL fragment, which the page rem
 
 ## Notifications
 
-Each dashboard links to Notifications. A background collector reads committed workflow history and creates inbox entries for the reporter, assigned worker and officers as applicable, excluding the actor. A per-recipient/history uniqueness constraint and locked processing prevent duplicates. Read state and unread counts come from MySQL. The page refreshes every 20 seconds. Email/SMS delivery is not enabled; there is no fake success response for external delivery.
+Each dashboard links to Notifications. A background collector reads committed workflow history and creates inbox entries for the reporter, assigned worker and officers as applicable, excluding the actor. A per-recipient/history uniqueness constraint and locked processing prevent duplicates. Read state and unread counts come from MySQL. The page refreshes every 20 seconds. Automatic deadline alerts can also send real SMTP email with persisted retry and delivery status. Configure the sender with `setup-email.cmd` or private SMTP keys in `backend/.env`, then restart. Configure recipients and send a test from the officer Overview. See [Email setup](EMAIL_SETUP.md) and [Automatic escalation](AUTOMATIC_ESCALATION.md). Demo accounts never send external emails. SMS is not implemented.
 
 ## Health checks
 
@@ -49,3 +49,17 @@ The backup's structure, hashes and successful import have been verified using a 
 - `python ai-service/evaluate_model.py`: repeat the six-photo visible-litter check.
 
 Browser verification needs development dependencies Playwright and its Chromium browser. These are not needed for everyday application use.
+
+## Local field-team roster and portal pond status
+
+The local database now has Team 1 (Anaswar), Team 2 (Nandana), Team 3 (Adithyan), Team 4 (Fathima), and Team 5 (Vishnu), each with a lead worker account. Existing worker IDs, passwords and assignments were preserved. Separately scoped demo lead accounts use the same numbered display roster. The assignment selector sorts team numbers naturally and labels workload as active tasks, not as a team number.
+
+Newly generated lead credentials are saved only in Windows-user-encrypted `.runtime/team-logins.protected`. They are not frontend demo helpers or repository credentials. Use the existing local `recover-account.cmd` procedure to set a lead account password when needed. Existing primary and bootstrap worker logins retain their passwords.
+
+Officer public pond status opens `panchayat/public-ponds.html`; field workers use `worker/ponds.html`. Both retain their role navigation, show the account-scoped public pond API, and open timelines in a dialog. Officer pond management remains a separate page.
+
+### Logging in to a selected field team
+
+Select **Field worker**, choose **Team 1–5**, and enter the private worker credentials. The configured local shared worker login has explicit database grants for all five real leads. Each session loads only the selected lead's tasks and notifications; teams without assignments correctly show an empty list. Other accounts retain only their own or explicitly granted team access. Sign out and log in again to change teams.
+
+The `worker_team_access` table stores `(login_user_id, worker_user_id)` pairs. This permission setup is local database data, preserved across restarts and included in backups. No private password is embedded in frontend code or Git.

@@ -12,7 +12,7 @@ A UHV college project connecting citizens, Panchayat officers, and field workers
 ![FastAPI](https://img.shields.io/badge/FastAPI-image_service-009688?logo=fastapi&logoColor=white)
 ![Local deployment](https://img.shields.io/badge/Deployment-localhost-2f5b3e)
 
-[Quick start](#quick-start) · [Architecture](#architecture) · [Data flow](#data-flow) · [Demo](#judge-demonstration) · [Verification](#verification-and-project-statistics) · [Documentation](#documentation)
+[Quick start](#quick-start) · [Architecture](#architecture) · [Data flow](#data-flow) · [Pond Recovery Index](#pond-recovery-index) · [Email escalation](#automatic-email-escalation) · [Demo](#judge-demonstration) · [Verification](#verification-and-project-statistics) · [Documentation](#documentation)
 
 </div>
 
@@ -46,14 +46,18 @@ flowchart TB
         DB[("MySQL :3306<br/>Workflow records · History · AI jobs")]
         Files["Local upload storage<br/>Complaint photos · Completion evidence"]
         Jobs["Scheduled AI job processing<br/>Stored jobs · Retries · Response validation"]
+        Deadlines["Scheduled deadline monitor<br/>Stage events · Delivery queue · Retries"]
         AI["Python FastAPI :8000<br/>Pretrained YOLO11s · OpenCV"]
         Ops["PowerShell launcher and maintenance<br/>Start/stop · Health · Backup · Recovery"]
     end
+    SMTP["Configured SMTP server<br/>Authority email delivery"]
     Person --> Web
     Web -->|"JSON / multipart · JWT"| API
     API --> DB
     API --> Files
     Jobs <--> DB
+    Deadlines <--> DB
+    Deadlines -->|"STARTTLS email"| SMTP
     Jobs -->|"Classification / evidence requests"| AI
     AI -->|"Fetch images through Java upload URLs"| API
     AI -->|"Advisory results"| Jobs
@@ -70,6 +74,7 @@ flowchart TB
 - **MySQL:** stores application records and history. Flyway applies schema changes; Hibernate validates the schema on startup. Java services also use JDBC for workflow queries and updates.
 - **Filesystem:** stores uploaded image bytes; database records hold their paths. Database rollback is paired with cleanup of newly stored files when completion fails.
 - **Python:** analyzes images and returns advisory results. It does not decide whether a complaint is resolved.
+- **Deadline monitoring:** records overdue stages and inbox notifications, queues emails to configured recipients, and tracks SMTP attempts. Demo events stay inside the demo inbox.
 - **Local operations:** coordinates application startup, checks services, encrypts saved local credentials for the Windows user, and manages database/upload backups.
 
 ## Tech stack
@@ -81,7 +86,8 @@ flowchart TB
 | Backend | Java 17, Spring Boot **3.5.16**, Maven | REST API and business rules |
 | Authentication | Spring Security, OAuth2 Resource Server/JWT, password hashing | Role and ownership checks, token authentication |
 | Persistence | MySQL, Spring JDBC, Spring Data JPA/Hibernate | Persistent records, queries, and schema validation |
-| Migrations | Flyway Core + MySQL support | Seven versioned schema migrations |
+| Migrations | Flyway Core + MySQL support | Ten versioned schema migrations |
+| Email alerts | Spring Boot Mail, Jakarta Mail, SMTP with STARTTLS | Automatic deadline escalation, persisted delivery status, and retries |
 | Alternative database | H2 | Default standalone backend database and isolated integration tests |
 | Image API | Python **3.11+**, FastAPI, Uvicorn, Pydantic | Request validation and image analysis endpoints |
 | Image processing | OpenCV, NumPy, Pillow | Image quality and before/after comparison |
@@ -112,7 +118,7 @@ stateDiagram-v2
     REJECTED --> [*]
 ```
 
-Every transition is permission-checked and recorded in history. Reopened complaints retain earlier evidence and task records. The dashboard's **Workflow progress** percentage is calculated from complaint stages and priority; it is not a water-quality measurement.
+Every transition is permission-checked and recorded in history. Reopened complaints retain earlier evidence and task records. The dashboard's **Pond Recovery Index** is calculated from complaint stages and priority; it is a workflow measure, not a water-quality measurement.
 
 ### Completion submission and AI processing
 
@@ -150,7 +156,7 @@ sequenceDiagram
 
 ### Main database relationships
 
-The diagram shows selected relationships across the 14 application tables; the SQL migrations define the complete columns, indexes, and constraints.
+The diagram shows selected relationships across the 18 application tables; the SQL migrations define the complete columns, indexes, and constraints.
 
 ```mermaid
 erDiagram
@@ -169,7 +175,75 @@ erDiagram
     PROBLEMS ||--o{ AI_JOBS : queues
     APP_USERS ||--o{ USER_NOTIFICATIONS : receives
     APP_USERS ||--o{ PASSWORD_RESET_TOKENS : has
+    APP_USERS ||--o{ WORKER_TEAM_ACCESS : grants_team_context
 ```
+
+## Pond Recovery Index
+
+The **Pond Recovery Index (PRI)** summarizes the progress of a pond's complaints on a **0–100 workflow scale**. Priority weights give urgent complaints more influence. Only verified complaints receive full credit.
+
+| Complaint stage | Progress contribution |
+|---|---:|
+| Submitted | 0% |
+| Reopened | 10% |
+| Assigned | 20% |
+| In progress | 40% |
+| Completion claimed | 60% |
+| Community verification | 80% |
+| Verified | 100% |
+
+Priority weights: **Low = 1 · Medium = 2 · High = 3 · Urgent = 4**.
+
+```text
+PRI = round(100 × Σ(priority weight × stage fraction) / Σ(priority weight))
+```
+
+For example, a verified Medium complaint and an in-progress High complaint produce `round(100 × (2 × 1 + 3 × 0.4) / (2 + 3)) = 64`.
+
+- Rejected complaints are excluded. No applicable complaints means an unavailable index, not a fabricated score.
+- The result is capped at **99** until **every included complaint is verified**, so rounding cannot imply complete resolution early.
+- Reopening a complaint lowers its contribution; the value is recalculated from database records.
+- View it in public pond status, pond details, and the officer analytics panel.
+
+**Interpretation:** PRI measures recorded work and verification progress. It does not measure water chemistry, ecological recovery, or whether water is safe to use. See the [complete formula and rules](docs/AUTOMATIC_ESCALATION.md).
+
+## Automatic email escalation
+
+A Java scheduler checks active assigned/in-progress tasks every minute. When a deadline stage is reached, it records history, creates an in-app notification, and queues the applicable email. The officer configures the recipient addresses; the application does not discover or independently contact government offices.
+
+| Level | Default trigger | Recipient / action |
+|---|---|---|
+| **L0 — Assigned** | Task assigned | Existing assignment history and notification |
+| **L1 — Reminder** | Within 24 hours before deadline | Assigned worker reminder |
+| **L2 — Overdue** | Deadline reached | Panchayat alert |
+| **L3 — Higher authority** | Still unresolved 24 hours after deadline | Configured higher-authority alert |
+| **L4 — Inspection request** | Still unresolved 48 hours after deadline | Configured manual-inspection contact |
+
+```mermaid
+flowchart LR
+    Check["Scheduled deadline check"] --> Event["Unique task and stage event"]
+    Event --> Inbox["In-app notification"]
+    Event --> Scope{"Demo task?"}
+    Scope -->|"Yes"| Demo["Demo inbox only"]
+    Scope -->|"No"| Queue["Persistent email queue"]
+    Queue --> SMTP["Configured SMTP sender"]
+    SMTP -->|"Accepted"| Sent["Save SENT status"]
+    SMTP -->|"Failed"| Retry["Save failure and retry later"]
+    Retry --> Queue
+```
+
+### Configure and inspect delivery
+
+1. Configure a private sender through **[setup-email.cmd](setup-email.cmd)** or the six SMTP settings in an ignored `backend/.env` file. The sender can use Gmail with an app password and STARTTLS on port 587.
+2. Stop and restart the app to load changed SMTP settings.
+3. Log in as a real officer and open **Overview → Automatic deadline alerts → Authority email recipients and setup**.
+4. Save the Panchayat, higher-authority and inspection recipient addresses, then use **Send test email**.
+
+See [Email setup](docs/EMAIL_SETUP.md) for the full instructions. Passwords and private recipient configuration are not published in this repository.
+
+**Delivery behavior:** events and attempts persist in MySQL, missing configuration remains visible, and failed email sends retry with backoff. Demo accounts never send external emails. After downtime, the monitor catches up overdue stages; completed or inactive field tasks stop pending alerts. L4 sends an inspection request—it does not conduct an inspection.
+
+**Operational limits:** Java must remain running for timely checks, and email needs Internet access. `SENT` means the SMTP server accepted the message; it does not prove inbox arrival or acknowledgment. A process crash after SMTP acceptance but before the database update can cause a duplicate on retry. See [automatic escalation details](docs/AUTOMATIC_ESCALATION.md) for timing settings and delivery states.
 
 ## Quick start
 
@@ -255,18 +329,18 @@ These intentionally published demo credentials are for the local presentation. J
 | Worker tasks | 7 |
 | Verified public result examples | 2 |
 
-Seed data is labelled **[JUDGES DEMO]**, created idempotently, and preserved after subsequent user actions. Counts describe the initial demo fixture, not live usage or real environmental outcomes. Example before/after scenes are presentation data, not measured cleanups.
+Seed data is labelled **[JUDGES DEMO]**, created idempotently, and preserved after subsequent user actions. Demo records are visible only while authenticated with a demo account; normal accounts and anonymous public views use real data. Counts describe the initial demo fixture, not live usage or real environmental outcomes. Example before/after scenes are presentation data, not measured cleanups.
 
 ### Presentation route
 
-1. **Citizen:** inspect existing complaints or submit a new report with photos.
+1. **Citizen:** inspect existing complaints or submit a new report with a pond name, ward/locality, and optional photos/coordinates. The pond does not need prior officer registration.
 2. **Officer:** assign the report to the demo worker with a future deadline and priority; show dashboard counts and the seeded overdue task.
 3. **Worker:** start inspection, add a note, and submit before/after evidence with remarks.
 4. **Officer:** inspect evidence and AI advice; forward for community verification or return the work.
 5. **Citizen:** confirm to reach `VERIFIED`, or dispute with a reason to reach `REOPENED`.
 6. **Public view:** show updated pond status and verified highlights. Role notifications and lists refresh periodically, normally every 20 seconds.
 
-Citizen pond browsing stays inside the dashboard. Registration uses two sliding steps with preserved Back navigation. Auth layouts and animated pond illustrations adapt to desktop and phone screens.
+Citizen, officer, and worker pond browsing stay inside their respective dashboards. The local field roster has five numbered teams with named leads; workload counts are displayed separately from team numbers. Field worker login includes a team selector. The configured local shared worker account can access all five real teams through explicit MySQL grants, with separate signed sessions per selected team. Registration uses two sliding steps with preserved Back navigation. Auth layouts and animated pond illustrations adapt to desktop and phone screens.
 
 ## AI capabilities and evaluation
 
@@ -304,12 +378,12 @@ Counts checked against the source on **23 October 2026**; they describe implemen
 
 | Item | Count |
 |---|---:|
-| Tracked project files | 161 |
-| HTML pages | 14 |
-| Java application source files | 41 |
-| Java integration test classes / declared tests | 9 / 17 |
+| Source files in this snapshot | 184 |
+| HTML pages | 16 |
+| Java application source files | 46 |
+| Java test classes / declared tests | 13 / 22 |
 | Python service test functions | 6 |
-| Flyway migrations / application tables | 7 / 14 |
+| Flyway migrations / application tables | 10 / 18 |
 | User roles / complaint states | 3 / 8 |
 | Implementation phases | 6 implemented |
 
@@ -317,9 +391,9 @@ Counts checked against the source on **23 October 2026**; they describe implemen
 
 | Check | Result / scope |
 |---|---|
-| Java suite, rerun 23 October 2026 | **17 tests: 16 passed, 1 skipped, 0 failures/errors**; the MySQL smoke test is conditional |
+| Java suite, rerun 23 October 2026 | **22 tests: 21 passed, 1 skipped, 0 failures/errors**; the MySQL smoke test is conditional |
 | Python service suite, rerun 23 October 2026 | **6 passed** |
-| Real MySQL smoke test | Previously passed through Flyway **V7**; separate from the standard suite above |
+| Real MySQL smoke test | Passed through Flyway **V10** on 23 October 2026; separate from the standard suite above |
 | Real Java + Python + MySQL workflow | Previously reached `VERIFIED`; officer AI output checked in the browser |
 | Authentication and portals | Three role logins, notifications, role mismatch rejection, and citizen pond dialogs checked |
 | Responsive auth pages | Six viewport sizes from **320×568** to **1920×900** checked; registration Back/validation and real registration checked |
@@ -341,7 +415,9 @@ python ai-service/evaluate_model.py
 .\verify-mysql-workflow.cmd
 ```
 
-`verify-mysql-workflow.cmd` exercises the live MySQL workflow and browser, then removes its temporary test records. Development browser checks require Playwright and Chromium; normal startup does not. The conditional MySQL test can also be run with [backend/run-mysql-smoke.ps1](backend/run-mysql-smoke.ps1).
+`verify-mysql-workflow.cmd` exercises the live MySQL workflow and browser, then removes its temporary test records. Development browser checks require Playwright and Chromium; normal startup does not. The named-pond/demo-isolation integration test also checks typed names, optional coordinates, shared-name separation, and rejected cross-scope actions. The live browser/workflow regression is in `tests/named-ponds-scope-browser.py` and requires locally configured private test environment variables.
+
+The conditional MySQL test can also be run with [backend/run-mysql-smoke.ps1](backend/run-mysql-smoke.ps1).
 
 ## Local operations and security
 
@@ -376,7 +452,7 @@ Jalachaya/
 ├── assets/                     Decorations and labelled sample photos
 ├── backend/
 │   ├── src/main/java/          Spring Boot API and application services
-│   ├── src/main/resources/    Configuration and Flyway V1–V7
+│   ├── src/main/resources/    Configuration and Flyway V1–V10
 │   ├── src/test/java/          Integration tests
 │   └── pom.xml                 Java dependencies and Maven build
 ├── ai-service/                 FastAPI app, model setup, evaluation, service tests
@@ -390,7 +466,7 @@ Jalachaya/
 
 - **Local deployment only:** HTTPS, public-domain hosting, production monitoring, and public deployment configuration are not set up.
 - **AI field accuracy remains unvalidated:** the small sample check is advisory evidence, not an environmental measurement or benchmark.
-- **Email/SMS delivery is not enabled:** users have a persistent in-app inbox; password recovery uses the local operator command.
+- **Email requires private SMTP configuration:** automatic deadline escalation supports real email with delivery tracking and retries. Demo accounts use in-app alerts only. SMS is not implemented; password recovery uses the local operator command.
 - **Staff administration has no UI:** additional officer/worker setup uses bootstrap configuration.
 - **No known missing endpoints from the six-phase frontend contract:** empty lists and null progress values represent absent/applicable data, not hard-coded placeholder responses.
 
@@ -403,6 +479,8 @@ Jalachaya/
 | [Implementation phases](docs/BACKEND_PHASES.md) | Six-phase roadmap and atomic completion decision |
 | [Backend status](docs/BACKEND_STATUS.md) | Recorded verification and remaining limitations |
 | [Local operations](docs/LOCAL_OPERATIONS.md) | Startup, backup, restore, health, and recovery |
+| [Email setup](docs/EMAIL_SETUP.md) | Private Gmail SMTP sender configuration and test delivery |
+| [Automatic escalation and PRI](docs/AUTOMATIC_ESCALATION.md) | L1–L4 triggers, delivery retries, and the workflow index formula |
 | [AI service](ai-service/README.md) | Model setup and Python service behavior |
 | [AI integration](docs/AI_INTEGRATION.md) | Java/Python request and response contract |
 | [AI sample evaluation](docs/AI_SAMPLE_EVALUATION.md) | Labels, outcomes, and interpretation limits |

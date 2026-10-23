@@ -16,12 +16,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PondService {
+    private final in.jalachaya.backend.common.DataScope scope;
     private final PondRepository ponds;
     private final PondImageStore images;
     private final Validator validator;
     private final ProblemService problems;
 
-    public PondService(PondRepository ponds, PondImageStore images, Validator validator, ProblemService problems) {
+    public PondService(PondRepository ponds, PondImageStore images, Validator validator, ProblemService problems, in.jalachaya.backend.common.DataScope scope) {
+        this.scope = scope;
         this.ponds = ponds;
         this.images = images;
         this.validator = validator;
@@ -30,11 +32,12 @@ public class PondService {
 
     @Transactional(readOnly = true)
     public List<PondResponse> publicPonds() {
-        return ponds.findByActiveTrueOrderByNameAsc().stream().map(this::response).toList();
+        return ponds.findByActiveTrueOrderByNameAsc().stream().filter(p -> p.isDemo() == scope.currentDemo()).map(this::response).toList();
     }
 
     @Transactional(readOnly = true)
     public PondResponse publicPond(long id) {
+        scope.requirePond(id, scope.currentDemo());
         Pond pond = get(id);
         if (!pond.isActive()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pond not found.");
         return response(pond);
@@ -42,7 +45,7 @@ public class PondService {
 
     @Transactional(readOnly = true)
     public List<PondResponse> officerPonds() {
-        return ponds.findAllByOrderByNameAsc().stream().map(this::response).toList();
+        return ponds.findAllByOrderByNameAsc().stream().filter(p -> p.isDemo() == scope.currentDemo()).map(this::response).toList();
     }
 
     @Transactional(readOnly = true)
@@ -52,8 +55,16 @@ public class PondService {
 
     @Transactional
     public PondResponse create(PondRequest request) {
+        return createScoped(request, scope.currentDemo());
+    }
+
+    @Transactional
+    public PondResponse createDemo(PondRequest request) { return createScoped(request, true); }
+
+    private PondResponse createScoped(PondRequest request, boolean demo) {
         validate(request);
         Pond pond = new Pond();
+        pond.setDemo(demo);
         apply(pond, request);
         ensureUnique(pond);
         try {
@@ -123,6 +134,7 @@ public class PondService {
     }
 
     private Pond get(long id) {
+        if (scope.authenticated()) scope.requirePond(id, scope.currentDemo());
         return ponds.findById(id).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "Pond not found."));
     }
@@ -154,7 +166,7 @@ public class PondService {
     }
 
     private void ensureUnique(Pond pond) {
-        ponds.findByNameIgnoreCaseAndWardIgnoreCase(pond.getName(), pond.getWard())
+        ponds.findByNameIgnoreCaseAndWardIgnoreCaseAndDemo(pond.getName(), pond.getWard(), pond.isDemo())
                 .filter(existing -> !existing.getId().equals(pond.getId()))
                 .ifPresent(existing -> {
                     throw new ResponseStatusException(HttpStatus.CONFLICT,

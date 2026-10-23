@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PondRepository extends JpaRepository<Pond, Long> {
     List<Pond> findByActiveTrueOrderByNameAsc();
     List<Pond> findAllByOrderByNameAsc();
-    Optional<Pond> findByNameIgnoreCaseAndWardIgnoreCase(String name, String ward);
+    Optional<Pond> findByNameIgnoreCaseAndWardIgnoreCaseAndDemo(String name, String ward, boolean demo);
 }

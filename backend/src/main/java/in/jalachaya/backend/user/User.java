@@ -44,6 +44,9 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(name = "is_demo", nullable = false)
+    private boolean demo;
+
     @Column(length = 150)
     private String team;
 
@@ -64,6 +67,8 @@ public class User {
     public int getAuthVersion() { return authVersion; }
     public Role getRole() { return role; }
     public boolean isActive() { return active; }
+    public boolean isDemo() { return demo; }
+    public void setDemo(boolean demo) { this.demo = demo; }
     public String getTeam() { return team; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 

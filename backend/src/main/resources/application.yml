@@ -45,3 +45,17 @@ app:
     backend-url: ${AI_BACKEND_URL:http://localhost:8080}
     timeout-ms: ${AI_TIMEOUT_MS:5000}
     poll-ms: ${AI_POLL_MS:10000}
+
+  deadlines:
+    enabled: ${DEADLINE_MONITOR_ENABLED:true}
+    poll-ms: ${DEADLINE_POLL_MS:60000}
+    reminder-hours: ${DEADLINE_REMINDER_HOURS:24}
+    higher-hours: ${DEADLINE_HIGHER_HOURS:24}
+    inspection-hours: ${DEADLINE_INSPECTION_HOURS:48}
+  alerts:
+    mail-host: ${ALERT_SMTP_HOST:}
+    mail-port: ${ALERT_SMTP_PORT:587}
+    mail-username: ${ALERT_SMTP_USERNAME:}
+    mail-password: ${ALERT_SMTP_PASSWORD:}
+    mail-from: ${ALERT_MAIL_FROM:}
+    mail-starttls: ${ALERT_SMTP_STARTTLS:true}

@@ -30,10 +30,10 @@ public class Pond {
     @Column(name = "area_acres", precision = 10, scale = 2)
     private BigDecimal areaAcres;
 
-    @Column(nullable = false, precision = 10, scale = 7)
+    @Column(precision = 10, scale = 7)
     private BigDecimal latitude;
 
-    @Column(nullable = false, precision = 10, scale = 7)
+    @Column(precision = 10, scale = 7)
     private BigDecimal longitude;
 
     @Column(columnDefinition = "text")
@@ -44,6 +44,9 @@ public class Pond {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    @Column(name = "is_demo", nullable = false)
+    private boolean demo;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -63,6 +66,8 @@ public class Pond {
     public String getDescription() { return description; }
     public String getImagePath() { return imagePath; }
     public boolean isActive() { return active; }
+    public boolean isDemo() { return demo; }
+    public void setDemo(boolean demo) { this.demo = demo; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
     public void setName(String name) { this.name = name; }

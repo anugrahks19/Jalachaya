@@ -4,7 +4,10 @@ function Get-JalachayaOwnedProcess($record) {
     $process = Get-Process -Id ([int]$record.id) -ErrorAction SilentlyContinue
     if (-not $process) { return $null }
     try {
-        $expected = [datetimeoffset]::Parse($record.startedAt).UtcDateTime
+        # PowerShell 7 may deserialize ISO timestamps as DateTime; keep full tick precision.
+        $expected = if ($record.startedAt -is [datetimeoffset]) { $record.startedAt.UtcDateTime }
+            elseif ($record.startedAt -is [datetime]) { $record.startedAt.ToUniversalTime() }
+            else { [datetimeoffset]::Parse($record.startedAt).UtcDateTime }
         if ($process.StartTime.ToUniversalTime().Ticks -ne $expected.Ticks) { return $null }
         $allowed = switch ($record.name) {
             'ai' { '^python(w)?$' }

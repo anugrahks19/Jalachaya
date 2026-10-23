@@ -14,10 +14,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Component
 public class WorkflowView {
+    private final in.jalachaya.backend.common.DataScope scope;
     private final JdbcTemplate jdbc;
     private final AiJobService aiJobs;
 
-    public WorkflowView(JdbcTemplate jdbc, AiJobService aiJobs) {
+    public WorkflowView(JdbcTemplate jdbc, AiJobService aiJobs, in.jalachaya.backend.common.DataScope scope) {
+        this.scope = scope;
         this.jdbc = jdbc;
         this.aiJobs = aiJobs;
     }
@@ -67,6 +69,8 @@ public class WorkflowView {
                 + "JOIN app_users u ON u.id = e.officer_id WHERE e.task_id = ? ORDER BY e.level", id);
         result.put("escalationLevel", escalations.isEmpty() ? 0
                 : ((Number) escalations.get(escalations.size() - 1).get("level")).intValue());
+        result.put("deadlineStage", jdbc.queryForObject("SELECT COALESCE(MAX(level),0) FROM deadline_events WHERE task_id=?",Integer.class,id));
+        result.put("deadlineAlerts",jdbc.queryForList("SELECT e.level,e.destination,e.message,a.status AS delivery_status FROM deadline_events e JOIN authority_deliveries a ON a.event_id=e.id WHERE e.task_id=? ORDER BY e.level",id));
         result.put("escalations", escalations.stream().map(escalation -> {
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("level", escalation.get("level"));
@@ -108,7 +112,7 @@ public class WorkflowView {
     }
 
     public List<Map<String, Object>> workerTasks(long workerId) {
-        List<Long> ids = jdbc.queryForList("SELECT id FROM tasks WHERE worker_id = ? "
+        List<Long> ids = jdbc.queryForList("SELECT t.id FROM tasks t JOIN problems p ON p.id = t.problem_id WHERE t.worker_id = ? AND " + scope.problems("p", scope.demo(workerId)) + " "
                 + "ORDER BY active DESC, deadline ASC, id DESC", Long.class, workerId);
         return ids.stream().map(id -> workerTask(id)).toList();
     }

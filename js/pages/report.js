@@ -3,7 +3,8 @@
 const session = Auth.requireRole(ROLES.CITIZEN);
 
 const reportForm = document.getElementById('reportForm');
-const pondSelect = document.getElementById('pondId');
+const pondNameInput = document.getElementById('pondName');
+const pondWardInput = document.getElementById('pondWard');
 const categorySelect = document.getElementById('category');
 const descriptionInput = document.getElementById('description');
 const submitBtn = document.getElementById('submitBtn');
@@ -16,6 +17,7 @@ if (session) {
   photoPicker = UI.photoPicker(document.getElementById('reportPhotos'), { max: CONFIG.MAX_REPORT_PHOTOS });
   fillCategories();
   renderSamples();
+  API.getMe().then(function (me) { session.demo = me.demo === true; renderSamples(); }).catch(function () {});
   loadPonds();
   setupEvents();
 }
@@ -28,7 +30,7 @@ function fillCategories() {
 
 // Sample photos panel: real photos of polluted ponds (CONFIG.SAMPLE_IMAGES.polluted)
 function renderSamples() {
-  if (!CONFIG.USE_MOCK_BACKEND) {
+  if (!session.demo) {
     document.getElementById('sampleAside').classList.add('hidden');
     return;
   }
@@ -37,7 +39,7 @@ function renderSamples() {
   list.innerHTML = samples.map(function (sample, i) {
     return '<div class="sample-item">' +
       UI.photo(sample.url, sample.caption) +
-      (CONFIG.USE_MOCK_BACKEND
+      (session.demo
         ? '<button type="button" class="btn btn-small btn-secondary" data-sample="' + i + '">Use this photo</button>'
         : '') +
       '</div>';
@@ -54,32 +56,25 @@ function renderSamples() {
 async function loadPonds() {
   try {
     pondList = await API.getPublicPonds();
-    pondSelect.innerHTML = '<option value="">Select pond</option>' + pondList.map(function (p) {
-      return '<option value="' + p.id + '">' + UI.escape(p.name) + ' (' + UI.escape(p.ward) + ')</option>';
+    document.getElementById('pondSuggestions').innerHTML = pondList.map(function (p) {
+      return '<option value="' + UI.escape(p.name) + '">' + UI.escape(p.ward) + '</option>';
     }).join('');
-
-    // Pre-select a pond when coming from pond.html?id=...
     const preselect = UI.queryParam('pond');
-    if (preselect && pondList.some(function (p) { return String(p.id) === preselect; })) {
-      pondSelect.value = preselect;
-      fillPondCoordinates();
+    const pond = pondList.find(function (p) { return String(p.id) === preselect; });
+    if (pond) {
+      pondNameInput.value = pond.name; pondWardInput.value = pond.ward;
+      document.getElementById('latitude').value = pond.latitude == null ? '' : pond.latitude;
+      document.getElementById('longitude').value = pond.longitude == null ? '' : pond.longitude;
     }
-  } catch (error) {
-    pondSelect.innerHTML = '<option value="">Could not load ponds</option>';
-    UI.showError(error);
-  }
-}
 
-function fillPondCoordinates() {
-  const pond = pondList.find(function (p) { return String(p.id) === pondSelect.value; });
-  if (pond) {
-    document.getElementById('latitude').value = pond.latitude;
-    document.getElementById('longitude').value = pond.longitude;
+  } catch (error) {
+    // Suggestions are optional; an unregistered pond can still be reported.
+    document.getElementById('pondSuggestions').innerHTML = '';
   }
 }
 
 function setupEvents() {
-  pondSelect.addEventListener('change', fillPondCoordinates);
+  // Names and locations are entered by the citizen; suggestions never constrain reporting.
 
   descriptionInput.addEventListener('input', function () {
     document.getElementById('charCount').textContent = descriptionInput.value.length;
@@ -98,7 +93,7 @@ function setupEvents() {
       document.getElementById('longitude').value = pos.coords.longitude.toFixed(6);
       status.textContent = 'Location added.';
     }, function () {
-      status.textContent = 'Could not get location. The pond location will be used instead.';
+      status.textContent = 'Could not get location. You can enter coordinates manually or describe the location using the ward and landmark.';
     }, { timeout: 10000 });
   });
 
@@ -117,7 +112,8 @@ async function submitReport(event) {
 
   // ---- Validation ----
   let valid = true;
-  if (!pondSelect.value) { UI.showFieldError(pondSelect, 'Please select a pond.'); valid = false; }
+  if (pondNameInput.value.trim().length < 3) { UI.showFieldError(pondNameInput, 'Enter the pond name (at least 3 characters).'); valid = false; }
+  if (!pondWardInput.value.trim()) { UI.showFieldError(pondWardInput, 'Enter the ward or locality.'); valid = false; }
   if (!categorySelect.value) { UI.showFieldError(categorySelect, 'Please select a category.'); valid = false; }
   if (description.length < 15) {
     UI.showFieldError(descriptionInput, 'Please describe the problem in at least 15 characters.'); valid = false;
@@ -126,6 +122,7 @@ async function submitReport(event) {
   const lng = lngInput.value;
   if (lat && (Number(lat) < -90 || Number(lat) > 90)) { UI.showFieldError(latInput, 'Latitude must be between -90 and 90.'); valid = false; }
   if (lng && (Number(lng) < -180 || Number(lng) > 180)) { UI.showFieldError(lngInput, 'Longitude must be between -180 and 180.'); valid = false; }
+  if (Boolean(lat) !== Boolean(lng)) { UI.showFieldError(latInput, 'Enter both coordinates or leave both blank.'); valid = false; }
   if (!valid) {
     document.getElementById('formMessage').innerHTML = '<div class="alert alert-error">Please correct the highlighted fields.</div>';
     return;
@@ -134,7 +131,8 @@ async function submitReport(event) {
   // ---- Build multipart form data (same format the Spring Boot API expects) ----
   const photos = photoPicker.getPhotos();
   const formData = new FormData();
-  formData.append('pondId', pondSelect.value);
+  formData.append('pondName', pondNameInput.value.trim());
+  formData.append('pondWard', pondWardInput.value.trim());
   formData.append('category', categorySelect.value);
   formData.append('description', description);
   formData.append('landmark', document.getElementById('landmark').value.trim());

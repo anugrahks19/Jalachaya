@@ -34,7 +34,7 @@ Flyway V7 adds hashed reset tokens, account authentication versions and persiste
 
 | # | Method & path | Who | Used by | Body / query |
 |---|---|---|---|---|
-| 1 | `POST /api/auth/login` | anyone | login.js | `{ email, password, role? }`; the login page requires a role selection. A supplied role must match the stored account role or the API returns 403; unknown roles return 400. Omitting it remains supported for existing API clients. |
+| 1 | `POST /api/auth/login` | anyone | login.js | `{ email, password, role?, team? }`; the login page requires a role selection. A supplied role must match the stored account role or the API returns 403; unknown roles return 400. Omitting it remains supported for existing API clients. |
 | 2 | `POST /api/auth/register` | anyone | register.js | `{ name, email, phone, ward, password }` → creates `COMMUNITY_MEMBER` |
 | 3 | `GET /api/users/me` | logged in | — | |
 | 4 | `GET /api/users?role=FIELD_WORKER` | officer | complaints | |
@@ -47,7 +47,7 @@ Flyway V7 adds hashed reset tokens, account authentication versions and persiste
 | 9 | `PUT /api/ponds/{id}` | officer | ponds | Pond fields, or `{ active: false }` to deactivate |
 | 9a | `POST /api/ponds/{id}/image` **(added)** | officer | ponds | multipart: `image` (replaces the current photo) |
 | 9b | `DELETE /api/ponds/{id}/image` **(added)** | officer | ponds | removes the pond photo |
-| 10 | `POST /api/problems` | citizen | report.js | multipart: `pondId, category, description, landmark, latitude, longitude`, and `images` repeated 0–3 times |
+| 10 | `POST /api/problems` | citizen | report.js | multipart: `pondName, pondWard, category, description, landmark, latitude?, longitude?` (legacy clients may supply `pondId` instead), and `images` repeated 0–3 times |
 | 10a | `POST /api/problems/{id}/images` **(added)** | reporter | citizen dashboard | multipart: `image, caption?` (max 6 photos per complaint, not when VERIFIED/REJECTED) |
 | 11 | `GET /api/problems?mine=true` | citizen | citizen dashboard | |
 | 12 | `GET /api/problems` | officer | complaints, overview | query: `pondId, category, priority, status, overdue=true, search` |
@@ -69,7 +69,7 @@ Flyway V7 adds hashed reset tokens, account authentication versions and persiste
 
 ### Login / register → `200`
 ```json
-{ "token": "eyJ...", "role": "COMMUNITY_MEMBER", "userId": 12, "name": "Anjali Menon" }
+{ "token": "eyJ...", "role": "COMMUNITY_MEMBER", "userId": 12, "name": "Anjali Menon", "demo": false }
 ```
 
 ### Public pond (list item) — #5
@@ -193,3 +193,30 @@ Return image locations as paths such as `/uploads/problems/11-1.jpg` (served by 
 | Duplicate email on register | 409 |
 | Every status change appends to history — never overwrite or delete | — |
 | Saving a complaint must not depend on the AI service being up | — |
+
+## Named ponds and demo isolation (Flyway V8)
+
+Citizens enter a pond name and ward/locality; existing registered ponds are optional suggestions, never a prerequisite. `POST /api/problems` atomically reuses a case-insensitive name/locality match in the actor's scope or creates a pond alongside the complaint. Coordinates are optional, but must be supplied as a pair. Unknown coordinates remain `null`; no sample coordinates are substituted. Officer pond management can complete the recorded details later.
+
+`app_users.is_demo` and `ponds.is_demo` are server-owned flags. Normal registration cannot request demo scope, and `@judges.invalid` addresses are reserved. Lists, details, worker assignment, dashboard/analytics, community verification, notifications, public feeds and pond mutations are scoped to the authenticated account. Cross-scope IDs return 404 or an invalid-worker error. Public endpoints accept the bearer token for scope; anonymous requests show only real records. Login and `/api/users/me` expose `demo` for UI labels; changing it in browser storage never grants access.
+
+V8 preserves older genuine reports linked to sample ponds by moving them to separate real pond records labelled as needing location confirmation; sample coordinates are not reused. Seeded examples are retained for demo accounts. AI jobs continue to process the appropriate stored complaint without changing its scope.
+
+## Selected worker team (Flyway V9)
+
+Worker login optionally accepts `team: "Team 1"` through `"Team 5"`. Omission preserves the account's own worker context for older clients. Selecting another lead requires an explicit `worker_team_access` grant in the same real/demo scope. The selected worker is the signed JWT subject, so existing task ownership and notifications apply to that team's lead. The original credential owner's ID and authentication version are also signed into the token. Permission removal, credential-owner password changes, disabled accounts, or team changes invalidate the affected token.
+
+Login responses include `team` and `loginUserId` alongside the effective `userId`; `/api/users/me` includes `team`. Browser storage never authorizes access. The local shared worker account has explicit grants for all five real teams; no generic email-based bypass or shared password is stored in source.
+
+
+## Automatic deadline escalation (V10)
+
+All three endpoints require a Panchayat officer JWT and use that account's real/demo scope.
+
+- `GET /api/escalations/automatic`: `{items, contacts, rules}`. Items include `id`, `taskId`, `problemId`, `code`, `level`, `destination`, `message`, `deliveryStatus`, `recipient`, `attempts`, `lastError`, `createdAt`, `sentAt`. Contacts have `PANCHAYAT`, `HIGHER`, `INSPECTION` keys. Rules include `enabled`, `reminderHours`, `higherHours`, `inspectionHours`, `smtpReady`. SMTP readiness means configuration is present, not a successful authentication test.
+- `POST /api/escalations/settings`: JSON `{panchayatEmail, higherEmail, inspectionEmail}`; validated email strings, maximum 254 characters. Empty/null removes that contact. Returns the same shape as GET.
+- `POST /api/escalations/test-email`: sends a real connection test to the configured Panchayat recipient. Returns `{status:"SENT", message}` only after SMTP acceptance. Demo accounts receive 400; missing sender/recipient 409; send failure 502. Non-officers receive 403.
+
+Task views additionally contain `deadlineStage` (0–4) and `deadlineAlerts` entries with `level`, `destination`, `message`, `delivery_status`. Existing manual escalation data remains separate.
+
+The pond `recoveryPercent` represents the Pond Recovery Index workflow proxy. It is capped at 99 unless all included non-rejected complaints are verified, and null when there are no applicable complaints. See [formula and automatic deadline rules](AUTOMATIC_ESCALATION.md).

@@ -21,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
+    private final in.jalachaya.backend.user.WorkerTeams teams;
     private final UserRepository users;
     private final PasswordEncoder passwords;
     private final JwtEncoder jwtEncoder;
@@ -29,7 +30,8 @@ public class AuthService {
 
     public AuthService(UserRepository users, PasswordEncoder passwords, JwtEncoder jwtEncoder,
             @Value("${app.jwt.issuer}") String issuer,
-            @Value("${app.jwt.ttl-hours}") long ttlHours) {
+            @Value("${app.jwt.ttl-hours}") long ttlHours, in.jalachaya.backend.user.WorkerTeams teams) {
+        this.teams = teams;
         this.users = users;
         this.passwords = passwords;
         this.jwtEncoder = jwtEncoder;
@@ -47,7 +49,7 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "This account does not use the selected role. Choose the role assigned to your account.");
         }
-        return session(user);
+        return session(teams.select(user, request.team()), user);
     }
 
     public SessionResponse register(RegisterRequest request) {
@@ -56,6 +58,7 @@ public class AuthService {
         if (name.length() < 3 || request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid name or password.");
         }
+        if (email.endsWith("@judges.invalid")) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This email domain is reserved for demonstration accounts.");
         if (users.existsByEmailIgnoreCase(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "An account with this email already exists.");
         }
@@ -74,7 +77,9 @@ public class AuthService {
         return session(user);
     }
 
-    private SessionResponse session(User user) {
+    private SessionResponse session(User user) { return session(user, user); }
+
+    private SessionResponse session(User user, User login) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(issuer)
@@ -83,9 +88,12 @@ public class AuthService {
                 .expiresAt(now.plus(ttlHours, ChronoUnit.HOURS))
                 .claim("role", user.getRole().name())
                 .claim("authVersion", user.getAuthVersion())
+                .claim("loginUserId", login.getId())
+                .claim("loginAuthVersion", login.getAuthVersion())
+                .claim("team", user.getTeam() == null ? "" : user.getTeam())
                 .build();
         String token = jwtEncoder.encode(JwtEncoderParameters.from(
                 JwsHeader.with(MacAlgorithm.HS256).build(), claims)).getTokenValue();
-        return new SessionResponse(token, user.getRole(), user.getId(), user.getName());
+        return new SessionResponse(token, user.getRole(), user.getId(), user.getName(), user.isDemo(), user.getTeam(), login.getId());
     }
 }

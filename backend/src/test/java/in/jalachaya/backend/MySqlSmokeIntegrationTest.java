@@ -27,7 +27,7 @@ class MySqlSmokeIntegrationTest {
             assertThat(connection.getMetaData().getDatabaseProductName()).containsIgnoringCase("MySQL");
         }
         assertThat(jdbc.queryForObject("SELECT version FROM flyway_schema_history "
-                + "WHERE success = TRUE ORDER BY installed_rank DESC LIMIT 1", String.class)).isEqualTo("7");
+                + "WHERE success = TRUE ORDER BY installed_rank DESC LIMIT 1", String.class)).isEqualTo("10");
         ResponseEntity<String> health = rest.getForEntity("/api/health", String.class);
         assertThat(health.getStatusCode().value()).isEqualTo(200);
         assertThat(health.getBody()).contains("\"database\":\"UP\"");

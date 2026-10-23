@@ -25,11 +25,13 @@ public class OperationsService {
     private static final Map<Integer, String> DESTINATIONS = Map.of(1, "Ward member",
             2, "Panchayat President", 3, "Block Development Officer");
 
+    private final in.jalachaya.backend.common.DataScope scope;
     private final JdbcTemplate jdbc;
     private final UserRepository users;
     private final ProblemService problems;
 
-    public OperationsService(JdbcTemplate jdbc, UserRepository users, ProblemService problems) {
+    public OperationsService(JdbcTemplate jdbc, UserRepository users, ProblemService problems, in.jalachaya.backend.common.DataScope scope) {
+        this.scope = scope;
         this.jdbc = jdbc;
         this.users = users;
         this.problems = problems;
@@ -41,6 +43,7 @@ public class OperationsService {
         List<Map<String, Object>> ids = jdbc.queryForList("SELECT problem_id FROM tasks WHERE id = ?", taskId);
         if (ids.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Task not found.");
         long problemId = ((Number) ids.get(0).get("problem_id")).longValue();
+        scope.requireProblem(problemId, scope.demo(actorId));
         // Lock in the same order as the field-work workflow to serialize status and escalation changes.
         Map<String, Object> problem = jdbc.queryForMap("SELECT status FROM problems WHERE id = ? FOR UPDATE", problemId);
         Map<String, Object> task = jdbc.queryForMap("SELECT active, deadline FROM tasks WHERE id = ? FOR UPDATE", taskId);
@@ -72,16 +75,16 @@ public class OperationsService {
     public Map<String, Object> summary(long actorId) {
         officer(actorId);
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("totalPonds", count("SELECT COUNT(*) FROM ponds WHERE active = TRUE"));
-        result.put("activeProblems", count("SELECT COUNT(*) FROM problems WHERE status NOT IN ('VERIFIED', 'REJECTED')"));
-        result.put("newComplaints", count("SELECT COUNT(*) FROM problems WHERE status IN ('SUBMITTED', 'REOPENED')"));
-        result.put("inProgress", count("SELECT COUNT(*) FROM problems WHERE status IN ('ASSIGNED', 'IN_PROGRESS')"));
+        result.put("totalPonds", count(actorId, "SELECT COUNT(*) FROM ponds WHERE active = TRUE"));
+        result.put("activeProblems", count(actorId, "SELECT COUNT(*) FROM problems WHERE status NOT IN ('VERIFIED', 'REJECTED')"));
+        result.put("newComplaints", count(actorId, "SELECT COUNT(*) FROM problems WHERE status IN ('SUBMITTED', 'REOPENED')"));
+        result.put("inProgress", count(actorId, "SELECT COUNT(*) FROM problems WHERE status IN ('ASSIGNED', 'IN_PROGRESS')"));
         result.put("overdue", jdbc.queryForObject("SELECT COUNT(*) FROM problems p JOIN tasks t ON t.problem_id = p.id "
-                + "WHERE t.active = TRUE AND p.status IN ('ASSIGNED', 'IN_PROGRESS') AND t.deadline < ?",
+                + "WHERE t.active = TRUE AND " + scope.problems("p", scope.demo(actorId)) + " AND p.status IN ('ASSIGNED', 'IN_PROGRESS') AND t.deadline < ?",
                 Integer.class, LocalDateTime.now(ZoneOffset.UTC)));
-        result.put("awaitingReview", count("SELECT COUNT(*) FROM problems WHERE status = 'COMPLETION_CLAIMED'"));
-        result.put("awaitingVerification", count("SELECT COUNT(*) FROM problems WHERE status = 'COMMUNITY_VERIFICATION'"));
-        result.put("verified", count("SELECT COUNT(*) FROM problems WHERE status = 'VERIFIED'"));
+        result.put("awaitingReview", count(actorId, "SELECT COUNT(*) FROM problems WHERE status = 'COMPLETION_CLAIMED'"));
+        result.put("awaitingVerification", count(actorId, "SELECT COUNT(*) FROM problems WHERE status = 'COMMUNITY_VERIFICATION'"));
+        result.put("verified", count(actorId, "SELECT COUNT(*) FROM problems WHERE status = 'VERIFIED'"));
         return result;
     }
 
@@ -90,15 +93,15 @@ public class OperationsService {
         officer(actorId);
         Map<String, Integer> byCategory = new LinkedHashMap<>();
         CATEGORIES.forEach(category -> byCategory.put(category, 0));
-        jdbc.queryForList("SELECT category, COUNT(*) AS total FROM problems WHERE status <> 'REJECTED' "
+        jdbc.queryForList("SELECT category, COUNT(*) AS total FROM problems WHERE " + scope.problems("", scope.demo(actorId)) + " AND status <> 'REJECTED' "
                 + "GROUP BY category").forEach(row -> byCategory.put((String) row.get("category"),
                 ((Number) row.get("total")).intValue()));
         Map<String, Integer> byStatus = new LinkedHashMap<>();
         STATUSES.forEach(status -> byStatus.put(status, 0));
-        jdbc.queryForList("SELECT status, COUNT(*) AS total FROM problems GROUP BY status")
+        jdbc.queryForList("SELECT status, COUNT(*) AS total FROM problems WHERE " + scope.problems("", scope.demo(actorId)) + " GROUP BY status")
                 .forEach(row -> byStatus.put((String) row.get("status"),
                         ((Number) row.get("total")).intValue()));
-        List<Map<String, Object>> ponds = jdbc.queryForList("SELECT id, name FROM ponds WHERE active = TRUE "
+        List<Map<String, Object>> ponds = jdbc.queryForList("SELECT id, name FROM ponds WHERE active = TRUE AND is_demo = " + scope.demo(actorId) + " "
                 + "ORDER BY name, id").stream().map(pond -> {
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("id", pond.get("id"));
@@ -109,7 +112,10 @@ public class OperationsService {
         return Map.of("byCategory", byCategory, "byStatus", byStatus, "ponds", ponds);
     }
 
-    private int count(String query) { return jdbc.queryForObject(query, Integer.class); }
+    private int count(long actorId, String query) {
+        String filter = query.contains("FROM ponds") ? "is_demo = " + scope.demo(actorId) : scope.problems("", scope.demo(actorId));
+        return jdbc.queryForObject(query + " AND " + filter, Integer.class);
+    }
 
     private User officer(long actorId) {
         User actor = users.findById(actorId).filter(User::isActive).orElseThrow(() ->

@@ -97,6 +97,10 @@ function renderTasks() {
         (t.escalationLevel ? ' and has been escalated to ' + UI.escape(ESCALATION_LEVELS[t.escalationLevel]) : '') + '.</div>';
     }
 
+    if (t.active && t.deadlineStage) {
+      const stageNames = {1:'Deadline approaching: team reminder',2:'Overdue: Panchayat alerted',3:'Higher-authority escalation recorded',4:'Manual inspection requested'};
+      notice += '<div class="alert alert-warning small">L' + t.deadlineStage + ' - ' + UI.escape(stageNames[t.deadlineStage]) + '. See Notifications for details.</div>';
+    }
     let actions = '';
     if (t.stage === 'ASSIGNED') {
       actions = '<button type="button" class="btn btn-small" data-action="start" data-id="' + t.id + '">Start inspection</button>' +
@@ -141,8 +145,8 @@ function renderTasks() {
         '<span>Deadline: <strong>' + UI.formatDateTime(t.deadline) + '</strong></span>' +
         '<span>Assigned: ' + UI.formatDate(t.createdAt) + '</span>' +
         (p.landmark ? '<span>Spot: ' + UI.escape(p.landmark) + '</span>' : '') +
-        '<span><a target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=' + p.latitude + '&mlon=' + p.longitude +
-          '#map=18/' + p.latitude + '/' + p.longitude + '">Open location in map</a></span>' +
+        (p.latitude == null || p.longitude == null ? '<span>Coordinates not provided</span>' : '<span><a target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=' + p.latitude + '&mlon=' + p.longitude +
+          '#map=18/' + p.latitude + '/' + p.longitude + '">Open location in map</a></span>') +
       '</div>' +
       notice +
       '<div class="task-body">' +
@@ -234,7 +238,9 @@ function setupDialogs() {
   });
 
   // Demo helper: fill before/after with the two sample photos
-  document.getElementById('useSampleEvidence').addEventListener('click', async function () {
+  const sampleEvidenceButton = document.getElementById('useSampleEvidence');
+  if (sampleEvidenceButton) sampleEvidenceButton.addEventListener('click', async function () {
+    if (!session.demo || !selectedTask) return;
     pickers.before.clear();
     pickers.after.clear();
     // a polluted photo as "before" and a clean pond photo as "after"

@@ -30,7 +30,7 @@ public class UserController {
         User user = users.findById(id).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Please log in to continue."));
         return new MeResponse(user.getId(), user.getName(), user.getEmail(), user.getPhone(),
-                user.getWard(), user.getRole(), user.getCreatedAt().atOffset(ZoneOffset.UTC).toInstant());
+                user.getWard(), user.getRole(), user.isDemo(), user.getTeam(), user.getCreatedAt().atOffset(ZoneOffset.UTC).toInstant());
     }
 
     @GetMapping
@@ -39,12 +39,13 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only field workers can be listed.");
         }
         return users.findByRoleAndActiveTrueOrderByName(role).stream()
+                .filter(user -> user.isDemo() == problems.currentDemo())
                 .map(user -> new WorkerResponse(user.getId(), user.getName(), user.getTeam(),
                         user.getPhone(), problems.openTasks(user.getId())))
                 .toList();
     }
 
     public record MeResponse(Long id, String name, String email, String phone, String ward,
-                             Role role, Instant createdAt) {}
+                             Role role, boolean demo, String team, Instant createdAt) {}
     public record WorkerResponse(Long id, String name, String team, String phone, int openTasks) {}
 }

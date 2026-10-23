@@ -45,6 +45,8 @@ public class AiJobService {
     }
 
     public void enqueueClassification(long problemId) {
+        if (jdbc.queryForObject("SELECT COUNT(*) FROM problem_images WHERE problem_id = ?", Integer.class, problemId) == 0) return;
+        if (jdbc.queryForObject("SELECT COUNT(*) FROM ai_jobs WHERE operation_key = ?", Integer.class, "CLASSIFY:" + problemId) > 0) return;
         enqueue("CLASSIFY:" + problemId, "CLASSIFY", problemId, null, null);
     }
 

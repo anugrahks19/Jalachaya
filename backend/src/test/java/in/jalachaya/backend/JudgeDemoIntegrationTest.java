@@ -31,7 +31,11 @@ class JudgeDemoIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT COUNT(DISTINCT status) FROM problems", Integer.class)).isEqualTo(8);
         seeder.run();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM problems", Integer.class)).isEqualTo(9);
-        assertThat(rest.getForObject("/api/public/highlights", Map[].class)).hasSize(2);
+        assertThat(rest.getForObject("/api/public/highlights", Map[].class)).isEmpty();
+        var login = rest.postForObject("/api/auth/login", Map.of("email", "officer@judges.invalid", "password", "JudgeOfficer123!"), Map.class);
+        var headers = new org.springframework.http.HttpHeaders(); headers.setBearerAuth((String) login.get("token"));
+        assertThat(rest.exchange("/api/public/highlights", org.springframework.http.HttpMethod.GET,
+                new org.springframework.http.HttpEntity<>(headers), Map[].class).getBody()).hasSize(2);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM ponds", Integer.class)).isEqualTo(3);
         var publicAccounts = rest.getForEntity("/api/public/demo-accounts", String.class);
         assertThat(publicAccounts.getBody()).contains("citizen@judges.invalid", "JudgeWorker123!");

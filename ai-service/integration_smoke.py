@@ -149,6 +149,8 @@ def cleanup_mysql():
             upload_paths.extend(sql(query + ";").split())
         for table in ("user_notifications", "ai_jobs", "community_verifications"):
             statements.append(f"DELETE FROM {table} WHERE problem_id IN ({ids});")
+        statements.append(f"DELETE FROM authority_deliveries WHERE event_id IN (SELECT id FROM deadline_events WHERE problem_id IN ({ids}));")
+        statements.append(f"DELETE FROM deadline_events WHERE problem_id IN ({ids});")
         for table in ("task_escalations", "task_reviews", "task_evidence", "task_notes"):
             statements.append(f"DELETE FROM {table} WHERE task_id IN ({tasks});")
         for table in ("tasks", "problem_history", "problem_images"):

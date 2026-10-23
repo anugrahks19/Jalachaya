@@ -54,9 +54,9 @@ async function loadPond() {
         '<dl class="detail-grid">' +
           '<dt>Description</dt><dd>' + UI.escape(pond.description || '-') + '</dd>' +
           '<dt>Area</dt><dd>' + (pond.areaAcres ? pond.areaAcres + ' acres' : '-') + '</dd>' +
-          '<dt>Coordinates</dt><dd>' + pond.latitude.toFixed(4) + ', ' + pond.longitude.toFixed(4) +
-            ' &middot; <a href="https://www.openstreetmap.org/?mlat=' + pond.latitude + '&mlon=' + pond.longitude +
-            '#map=17/' + pond.latitude + '/' + pond.longitude + '" target="_blank" rel="noopener">Open in map</a></dd>' +
+          '<dt>Coordinates</dt><dd>' + (pond.latitude == null || pond.longitude == null ? 'Not provided' : pond.latitude.toFixed(4) + ', ' + pond.longitude.toFixed(4)) +
+            (pond.latitude == null || pond.longitude == null ? '' : ' &middot; <a href="https://www.openstreetmap.org/?mlat=' + pond.latitude + '&mlon=' + pond.longitude +
+            '#map=17/' + pond.latitude + '/' + pond.longitude + '" target="_blank" rel="noopener">Open in map</a>') + '</dd>' +
         '</dl>' +
       '</div>' +
 

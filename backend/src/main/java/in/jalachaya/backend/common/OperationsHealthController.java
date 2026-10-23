@@ -15,9 +15,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class OperationsHealthController {
+    private final DataScope scope;
     private final JdbcTemplate jdbc;
     private final Path uploads;
-    public OperationsHealthController(JdbcTemplate jdbc, @Value("${app.upload-dir}") String uploads) {
+    public OperationsHealthController(JdbcTemplate jdbc, @Value("${app.upload-dir}") String uploads, DataScope scope) {
+        this.scope = scope;
         this.jdbc = jdbc; this.uploads = Path.of(uploads).toAbsolutePath();
     }
     @GetMapping("/api/operations/health")
@@ -28,8 +30,8 @@ public class OperationsHealthController {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("database", jdbc.queryForObject("SELECT 1", Integer.class) == 1 ? "UP" : "DOWN");
         result.put("migrationVersion", jdbc.queryForObject("SELECT version FROM flyway_schema_history WHERE success = TRUE ORDER BY installed_rank DESC LIMIT 1", String.class));
-        result.put("aiJobs", jdbc.queryForList("SELECT status, COUNT(*) AS total FROM ai_jobs GROUP BY status"));
-        result.put("notificationEventsPending", jdbc.queryForObject("SELECT COUNT(*) FROM problem_history WHERE notifications_scanned = FALSE", Integer.class));
+        result.put("aiJobs", jdbc.queryForList("SELECT status, COUNT(*) AS total FROM ai_jobs WHERE problem_id IN (SELECT id FROM problems WHERE " + scope.problems("", scope.currentDemo()) + ") GROUP BY status"));
+        result.put("notificationEventsPending", jdbc.queryForObject("SELECT COUNT(*) FROM problem_history WHERE notifications_scanned = FALSE AND problem_id IN (SELECT id FROM problems WHERE " + scope.problems("", scope.currentDemo()) + ")", Integer.class));
         Path directory = uploads;
         while (!Files.exists(directory)) directory = directory.getParent();
         result.put("storageUsableBytes", Files.getFileStore(directory).getUsableSpace());

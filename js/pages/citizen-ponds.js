@@ -1,5 +1,7 @@
 'use strict';
-const session = Auth.requireRole(ROLES.CITIZEN);
+// Shared pond browser retains the navigation and permissions of each portal.
+const pondPortalRole = ROLES[document.body.dataset.portalRole || 'CITIZEN'];
+const session = Auth.requireRole(pondPortalRole);
 if (session) {
   UI.initDashboard(session);
   loadCitizenPonds();
@@ -40,7 +42,7 @@ async function openCitizenPond(id) {
     body.innerHTML = (pond.imageUrl ? '<img class="citizen-pond-photo" src="' + UI.escape(UI.imageSrc(pond.imageUrl)) + '" alt="' + UI.escape(pond.name) + '">' : '') +
       '<p class="muted">' + UI.escape(pond.ward) + (pond.village ? ', ' + UI.escape(pond.village) : '') + '</p>' +
       '<p>' + UI.escape(pond.description || 'No description added yet.') + '</p><div class="mb-2">' + UI.meter(pond.recoveryPercent) + '</div>' +
-      '<a class="btn mb-2" href="report.html?pond=' + pond.id + '">Report a problem here</a><h3>Complaint timeline</h3>' +
+      (pondPortalRole === ROLES.CITIZEN ? '<a class="btn mb-2" href="report.html?pond=' + pond.id + '">Report a problem here</a>' : '') + '<h3>Complaint timeline</h3>' +
       '<div class="table-wrap"><table class="table"><thead><tr><th>Complaint</th><th>Category</th><th>Status</th><th>Updated</th></tr></thead><tbody>' +
       (timeline || '<tr class="empty-row"><td colspan="4">No complaints reported for this pond.</td></tr>') + '</tbody></table></div>';
   } catch (error) { body.innerHTML = '<div class="alert alert-error">' + UI.escape(error.message) + '</div>'; }

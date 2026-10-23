@@ -504,6 +504,17 @@ const UI = {
         setInterval(refresh, 20000);
       }
     }
+    API.getMe().then(function (me) {
+      session.demo = me.demo === true;
+      Auth.save(session);
+      document.querySelectorAll('.demo-badge, .demo-note').forEach(function (el) {
+        el.classList.toggle('hidden', !session.demo);
+      });
+    }).catch(function () { /* Existing error handling displays API failures. */ });
+    if (session.role === ROLES.WORKER && session.team) {
+      const portal = document.querySelector('.portal-name');
+      if (portal) portal.textContent = 'Field worker · ' + session.team;
+    }
     const nameEl = document.getElementById('userName');
     if (nameEl) nameEl.textContent = session.name;
 
@@ -516,7 +527,10 @@ const UI = {
     }
 
     document.querySelectorAll('.demo-badge, .demo-note').forEach(function (el) {
-      el.classList.toggle('hidden', !CONFIG.USE_MOCK_BACKEND);
+      el.classList.toggle('hidden', !session.demo);
+      if (el.classList.contains('demo-note') && !el.querySelector('button, a, input')) {
+        el.textContent = 'Demonstration account: example records are separate from real reports.';
+      }
     });
 
     this.initResetButtons();

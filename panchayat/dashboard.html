@@ -13,7 +13,7 @@
 
   <header class="topbar">
     <div class="topbar-left">
-      <a class="brand" href="../index.html">
+      <a class="brand" href="dashboard.html">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-.4 0-.7.2-.9.5C9 6.1 5 11.4 5 15a7 7 0 0 0 14 0c0-3.6-4-8.9-6.1-12-.2-.3-.5-.5-.9-.5z" fill="#2f5b3e"/></svg>
         JALACHAYA
       </a>
@@ -32,7 +32,7 @@
       <a href="dashboard.html" class="active">Overview</a>
       <a href="complaints.html">Complaints</a>
       <a href="ponds.html">Ponds</a>
-      <a href="../index.html#ponds">Public site</a>
+      <a href="public-ponds.html">Public pond status</a>
       <div class="sidebar-footer">
         <div class="sketch-slot sidebar-art" data-sketch="lotus"></div>
         <p class="demo-note hidden">Demo data is saved in this browser only.</p>
@@ -50,6 +50,21 @@
         <!-- live drawing (js/sketches.js) -->
         <div class="sketch-slot header-art" data-sketch="office"></div>
       </div>
+
+      <section class="card" aria-labelledby="deadlineHeading">
+        <div class="flex-between"><h2 class="card-title" id="deadlineHeading">Automatic deadline alerts</h2><span class="small muted" id="mailTransportStatus">Checking email setup...</span></div>
+        <p class="hint" id="deadlineRules"></p>
+        <div id="automaticDeadlineList"><p class="muted">Loading alert history...</p></div>
+        <details class="mt-1"><summary>Authority email recipients and setup</summary>
+          <p class="hint mt-1">For Gmail sending, run <strong>setup-email.cmd</strong> on this computer and enter a Google app password privately. Recipient settings below do not configure the sender.</p>
+          <form id="authorityContactsForm" class="mt-1">
+            <div class="form-row"><div class="form-group"><label for="panchayatAlertEmail">Panchayat email (L2)</label><input type="email" maxlength="254" id="panchayatAlertEmail"></div><div class="form-group"><label for="higherAlertEmail">Higher authority email (L3)</label><input type="email" maxlength="254" id="higherAlertEmail"></div></div>
+            <div class="form-group"><label for="inspectionAlertEmail">Manual inspection email (L4)</label><input type="email" maxlength="254" id="inspectionAlertEmail"></div>
+            <div class="flex"><button class="btn" type="submit">Save recipients</button><button class="btn btn-outline" type="button" id="testAuthorityEmail" disabled>Send test email</button></div>
+            <div class="mt-1" id="authorityContactMessage" role="status"></div>
+          </form>
+        </details>
+      </section>
 
       <div class="stat-grid">
         <div class="stat-card stat-primary"><div class="stat-value" id="sumPonds">-</div><div class="stat-label">Active ponds</div></div>
@@ -88,10 +103,10 @@
         </section>
 
         <section class="card">
-          <h3 class="card-title">Pond workflow progress</h3>
+          <h3 class="card-title">Pond Recovery Index (workflow)</h3>
           <div class="table-wrap">
             <table class="table">
-              <thead><tr><th>Pond</th><th>Open</th><th>Workflow progress</th></tr></thead>
+              <thead><tr><th>Pond</th><th>Open</th><th>Pond Recovery Index</th></tr></thead>
               <tbody id="recoveryTable"><tr class="empty-row"><td colspan="3">Loading...</td></tr></tbody>
             </table>
           </div>

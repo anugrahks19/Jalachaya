@@ -10,6 +10,8 @@ $record = @{ name = 'frontend'; id = $child.Id; startedAt = $child.StartTime.ToU
 $file = Join-Path $testDirectory 'processes.json'
 try {
     Assert-True (Get-JalachayaOwnedProcess $record) 'Fresh process record did not match its own process.'
+    $dateRecord = @{ name = 'frontend'; id = $child.Id; startedAt = $child.StartTime.ToUniversalTime() }
+    Assert-True (Get-JalachayaOwnedProcess $dateRecord) 'Deserialized DateTime process record lost timestamp precision.'
     $stale = @{ name = 'frontend'; id = $child.Id; startedAt = $child.StartTime.ToUniversalTime().AddDays(-1).ToString('o') }
     @{ processes = @($stale) } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $file
     Stop-JalachayaSession $testDirectory

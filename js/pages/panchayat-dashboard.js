@@ -7,14 +7,15 @@ let newIds = [];   // ids that arrived through a live update (highlighted once)
 if (session) {
   UI.initDashboard(session);
   document.getElementById('todayText').textContent =
-    'Complaints and field work across all registered ponds - ' + UI.formatDate(new Date().toISOString()) + '.';
+    'Complaints and field work across reported and registered ponds - ' + UI.formatDate(new Date().toISOString()) + '.';
+  setupAuthorityContacts();
   loadDashboard();
   Live.start(loadDashboard, { statusId: 'liveStatus' });
 }
 
 async function loadDashboard() {
   try {
-    const results = await Promise.all([API.getDashboardSummary(), API.getProblems({}), API.getAnalytics()]);
+    const results = await Promise.all([API.getDashboardSummary(), API.getProblems({}), API.getAnalytics(), API.getAutomaticAlerts()]);
     newIds = Live.diff('problems', results[1].map(function (p) { return p.id; }));
     newIds.forEach(function (id) {
       const p = results[1].find(function (x) { return x.id === id; });
@@ -23,6 +24,7 @@ async function loadDashboard() {
     renderSummary(results[0]);
     renderQueues(results[1]);
     renderCharts(results[2]);
+    renderAutomaticAlerts(results[3]);
   } catch (error) {
     UI.showError(error);
   }
@@ -102,4 +104,38 @@ function renderCharts(analytics) {
     return '<tr><td>' + UI.escape(p.name) + '</td><td>' + p.activeComplaints + '</td>' +
       '<td style="min-width:130px">' + UI.meter(p.recoveryPercent) + '</td></tr>';
   }).join('');
+}
+
+function setupAuthorityContacts() {
+  const form = document.getElementById('authorityContactsForm');
+  form.addEventListener('input', function () { form.dataset.editing = 'true'; });
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    try {
+      const data = await API.saveAuthorityContacts({panchayatEmail:document.getElementById('panchayatAlertEmail').value.trim(),higherEmail:document.getElementById('higherAlertEmail').value.trim(),inspectionEmail:document.getElementById('inspectionAlertEmail').value.trim()});
+      form.dataset.editing = ''; renderAutomaticAlerts(data);
+      document.getElementById('authorityContactMessage').textContent = 'Recipients saved. Queued alerts retry automatically when SMTP is ready.';
+    } catch (error) { document.getElementById('authorityContactMessage').textContent = error.message; }
+  });
+  document.getElementById('testAuthorityEmail').addEventListener('click', async function () {
+    const button = this; UI.setLoading(button, true, 'Sending test...');
+    try { const result = await API.testAuthorityEmail(); document.getElementById('authorityContactMessage').textContent = result.message; }
+    catch(error) { document.getElementById('authorityContactMessage').textContent = error.message; }
+    finally { UI.setLoading(button,false); }
+  });
+}
+function renderAutomaticAlerts(data) {
+  const r=data.rules;
+  document.getElementById('deadlineRules').textContent = r.enabled ? 'Checked every minute while Java runs: L1 team reminder within '+r.reminderHours+'h before deadline; L2 Panchayat alert when overdue; L3 higher authority after '+r.higherHours+'h overdue; L4 manual inspection after '+r.inspectionHours+'h overdue.' : 'Automatic deadline monitoring is disabled in server configuration.';
+  document.getElementById('mailTransportStatus').textContent = session.demo ? 'Demo: in-app alerts only' : r.smtpReady ? 'SMTP configured - see each delivery status' : 'Email setup required - in-app alerts still work';
+  document.getElementById('testAuthorityEmail').disabled = session.demo || !r.smtpReady;
+  const labels={PENDING:'Email queued',PROCESSING:'Sending email',SENT:'Accepted by email server',RETRY:'Email retry pending',NEEDS_CONFIGURATION:'Email setup required',CANCELLED:'Email cancelled',DEMO_IN_APP:'Demo inbox only'};
+  document.getElementById('automaticDeadlineList').innerHTML = data.items.length ? '<ul class="list">'+data.items.slice(0,6).map(function (a) {
+    return '<li><div><a href="complaints.html?open='+a.problemId+'">'+UI.escape(a.code)+'</a> <strong>L'+a.level+' - '+UI.escape(a.destination)+'</strong><div class="small muted">'+UI.formatDateTime(a.createdAt)+' · '+UI.escape(labels[a.deliveryStatus] || a.deliveryStatus)+(a.recipient?' · '+UI.escape(a.recipient):'')+'</div></div></li>';
+  }).join('')+'</ul>' : '<p class="muted">No automatic deadline alerts in this account scope yet.</p>';
+  if(!document.getElementById('authorityContactsForm').dataset.editing) {
+    document.getElementById('panchayatAlertEmail').value=data.contacts.PANCHAYAT;
+    document.getElementById('higherAlertEmail').value=data.contacts.HIGHER;
+    document.getElementById('inspectionAlertEmail').value=data.contacts.INSPECTION;
+  }
 }

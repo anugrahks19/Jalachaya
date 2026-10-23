@@ -23,7 +23,7 @@ function showUrlMessages() {
   const alertBox = document.getElementById('pageAlert');
   if (UI.queryParam('welcome')) {
     alertBox.innerHTML = '<div class="alert alert-success">Welcome to JALACHAYA, ' + UI.escape(session.name) +
-      '. You can now report problems at any registered pond.</div>';
+      '. You can now report a problem by entering the pond name and its ward or locality.</div>';
   }
 }
 
@@ -149,7 +149,7 @@ async function openComplaint(id) {
         '<dt>Category</dt><dd>' + UI.escape(UI.categoryLabel(c.category)) + '</dd>' +
         '<dt>Description</dt><dd>' + UI.escape(c.description) + '</dd>' +
         '<dt>Landmark</dt><dd>' + UI.escape(c.landmark || '-') + '</dd>' +
-        '<dt>Location</dt><dd>' + Number(c.latitude).toFixed(5) + ', ' + Number(c.longitude).toFixed(5) + '</dd>' +
+        '<dt>Location</dt><dd>' + (c.latitude == null || c.longitude == null ? 'Not provided' : Number(c.latitude).toFixed(5) + ', ' + Number(c.longitude).toFixed(5)) + '</dd>' +
         '<dt>Reported on</dt><dd>' + UI.formatDateTime(c.createdAt) + '</dd>' +
         (c.task ? '<dt>Target date</dt><dd>' + UI.formatDateTime(c.task.deadline) + '</dd>' : '') +
       '</dl>' +

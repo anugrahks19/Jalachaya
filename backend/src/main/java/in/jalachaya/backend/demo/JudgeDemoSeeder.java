@@ -53,12 +53,12 @@ public class JudgeDemoSeeder implements CommandLineRunner {
             if (users.existsByEmailIgnoreCase(account.email())) continue;
             User user = new User(); user.setName("Judges Demo " + account.label());
             user.setEmail(account.email()); user.setPasswordHash(passwords.encode(account.password()));
-            user.setRole(account.role()); user.setWard("Demo Ward");
-            if (account.role() == Role.FIELD_WORKER) user.setTeam("Judges Demo Field Team");
+            user.setDemo(true); user.setRole(account.role()); user.setWard("Demo Ward");
+            if (account.role() == Role.FIELD_WORKER) user.setTeam("Team 1");
             users.saveAndFlush(user);
         }
         String marker = "[JUDGES DEMO] Lotus Pond";
-        if (jdbc.queryForObject("SELECT COUNT(*) FROM ponds WHERE name = ? AND ward = 'Demo Ward'", Integer.class, marker) > 0) {
+        if (jdbc.queryForObject("SELECT COUNT(*) FROM ponds WHERE name = ? AND ward = 'Demo Ward' AND is_demo = TRUE", Integer.class, marker) > 0) {
             ensureSecondResult();
             return;
         }
@@ -66,7 +66,7 @@ public class JudgeDemoSeeder implements CommandLineRunner {
         long[] pondIds = new long[3];
         String[] names = {marker, "[JUDGES DEMO] Village Pond", "[JUDGES DEMO] Garden Pond"};
         for (int i = 0; i < names.length; i++) {
-            var pond = ponds.create(new PondRequest(names[i], "Demo Ward", "Demonstration village", new BigDecimal("1.2"),
+            var pond = ponds.createDemo(new PondRequest(names[i], "Demo Ward", "Demonstration village", new BigDecimal("1.2"),
                     new BigDecimal("10.50").add(new BigDecimal("0.01").multiply(BigDecimal.valueOf(i))),
                     new BigDecimal("76.20"), "Fictional pond for judges. Sample photos and records demonstrate the workflow; they are not field observations."));
             pondIds[i] = pond.id();
@@ -108,7 +108,7 @@ public class JudgeDemoSeeder implements CommandLineRunner {
         if (jdbc.queryForObject("SELECT COUNT(*) FROM problems WHERE reporter_id = ? AND description = ?",
                 Integer.class, citizen, description) > 0) return;
         long officer = user(ACCOUNTS.get(1).email()), worker = user(ACCOUNTS.get(2).email());
-        long pondId = jdbc.queryForObject("SELECT id FROM ponds WHERE name = '[JUDGES DEMO] Lotus Pond' AND ward = 'Demo Ward'", Long.class);
+        long pondId = jdbc.queryForObject("SELECT id FROM ponds WHERE name = '[JUDGES DEMO] Lotus Pond' AND ward = 'Demo Ward' AND is_demo = TRUE", Long.class);
         var report = problems.create(citizen, pondId, "PLASTIC_WASTE", description, "Demo pond entrance",
                 null, null, List.of(photo("polluted-1.jpg")));
         long problemId = ((Number) report.get("id")).longValue();
