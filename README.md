@@ -130,8 +130,8 @@ sequenceDiagram
     Java->>DB: Lock/check task ownership and IN_PROGRESS status
     Java->>Files: Validate and store both images
     Java->>DB: Save evidence, history, notification, AI job, and status
-    Note over Java,DB: One transactional service operation; commit database changes
-    Java-->>Web: Completion claimed; officer review required
+    Note over Java,DB: Commit all database changes in one transactional service operation
+    Java-->>Web: Completion claimed - officer review required
     Note over Java,Files: On database failure, remove newly stored files
     Jobs->>DB: Read pending AI job
     Jobs->>AI: Analyze evidence with stable request ID
