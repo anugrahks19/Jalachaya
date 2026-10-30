@@ -24,6 +24,8 @@ app:
   demo:
     enabled: ${ENABLE_JUDGE_DEMO:false}
     samples-dir: ${DEMO_SAMPLES_DIR:../assets/samples}
+  snapshot:
+    enabled: ${SEED_SNAPSHOT:false}
   jwt:
     secret: ${JWT_SECRET:}
     issuer: jalachaya

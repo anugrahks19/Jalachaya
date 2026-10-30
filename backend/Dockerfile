@@ -15,8 +15,9 @@ WORKDIR /app
 # Create persistent storage directories and sample assets directory
 RUN mkdir -p /app/data /app/uploads /assets/samples
 
-# Copy sample images and compiled jar
+# Copy sample images, initial uploaded photos, and compiled jar
 COPY --from=build /app/src/main/resources/samples/ /assets/samples/
+COPY uploads-seed/ /app/uploads/
 COPY --from=build /app/target/*.jar app.jar
 
 # Render provides $PORT dynamically; provide safe defaults for all required env vars
@@ -24,6 +25,7 @@ ENV PORT=8080
 ENV BIND_ADDRESS=0.0.0.0
 ENV JWT_SECRET=jalachaya-default-jwt-secret-key-at-least-32-bytes-long-2026
 ENV ENABLE_JUDGE_DEMO=true
+ENV SEED_SNAPSHOT=true
 ENV AI_ENABLED=false
 ENV FRONTEND_ORIGINS=https://jalachaya.onrender.com,https://*.onrender.com,http://localhost:5500,http://127.0.0.1:5500
 EXPOSE 8080
