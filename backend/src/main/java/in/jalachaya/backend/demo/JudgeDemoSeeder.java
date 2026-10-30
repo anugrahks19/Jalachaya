@@ -132,7 +132,16 @@ public class JudgeDemoSeeder implements CommandLineRunner {
 
     private long user(String email) { return users.findByEmailIgnoreCase(email).orElseThrow().getId(); }
     private MultipartFile photo(String name) throws IOException {
-        byte[] data = Files.readAllBytes(samples.resolve(name));
+        Path file = samples.resolve(name);
+        byte[] data;
+        if (Files.exists(file)) {
+            data = Files.readAllBytes(file);
+        } else {
+            try (InputStream stream = getClass().getResourceAsStream("/samples/" + name)) {
+                if (stream == null) throw new FileNotFoundException("Sample image not found: " + name);
+                data = stream.readAllBytes();
+            }
+        }
         return new MultipartFile() {
             public String getName() { return "image"; }
             public String getOriginalFilename() { return name; }
