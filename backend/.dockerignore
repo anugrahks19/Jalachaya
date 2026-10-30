@@ -1,0 +1,7 @@
+target/
+.tools/
+data/
+uploads/
+.runtime/
+.env
+

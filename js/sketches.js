@@ -534,7 +534,13 @@ const Sketches = (function () {
       const uid = 's' + counter;
       const pondWidth = function () {
         const bounds = slot.getBoundingClientRect();
-        return bounds.height > 0 ? bounds.width / bounds.height * 100 : 1200;
+        const style = getComputedStyle(slot);
+        // Match the SVG's content area; dashboard strips have top padding.
+        // Using the outer height leaves letterboxing at both pond edges.
+        const inset = function (name) { return parseFloat(style[name]) || 0; };
+        const width = bounds.width - inset('paddingLeft') - inset('paddingRight') - inset('borderLeftWidth') - inset('borderRightWidth');
+        const height = bounds.height - inset('paddingTop') - inset('paddingBottom') - inset('borderTopWidth') - inset('borderBottomWidth');
+        return height > 0 ? width / height * 100 : 1200;
       };
       slot.innerHTML = make(uid, slot.dataset.sketch === 'strip' ? pondWidth() : undefined);
       if (slot.dataset.sketch === 'strip' && 'ResizeObserver' in window) {

@@ -12,7 +12,7 @@ A UHV college project connecting citizens, Panchayat officers, and field workers
 ![FastAPI](https://img.shields.io/badge/FastAPI-image_service-009688?logo=fastapi&logoColor=white)
 ![Local deployment](https://img.shields.io/badge/Deployment-localhost-2f5b3e)
 
-[Quick start](#quick-start) · [Architecture](#architecture) · [Data flow](#data-flow) · [Pond Recovery Index](#pond-recovery-index) · [Email escalation](#automatic-email-escalation) · [Demo](#judge-demonstration) · [Verification](#verification-and-project-statistics) · [Documentation](#documentation)
+[Quick start](#quick-start) · [Architecture](#architecture) · [Data flow](#data-flow) · [Pond Recovery Index](#pond-recovery-index) · [Email escalation](#automatic-email-escalation) · [Demo](#judge-demonstration) · [Deployment](#deployment) · [Verification](#verification-and-project-statistics)
 
 </div>
 
@@ -24,7 +24,7 @@ Jalachaya gives pond complaints a complete, reviewable record: a resident report
 
 The frontend calls a Java REST API backed by MySQL. A separate Python service provides advisory image analysis using an existing pretrained litter detector, without local model training. Human review controls complaint outcomes.
 
-**Current scope:** a working localhost installation with real database persistence, three role-specific portals, a Windows launcher, and local backup/recovery tools. Public hosting is not configured.
+**Current scope:** a working full-stack installation with real database persistence, three role-specific portals, local launcher tools, and public Render cloud deployment.
 
 ### Features by role
 
@@ -205,7 +205,7 @@ For example, a verified Medium complaint and an in-progress High complaint produ
 - Reopening a complaint lowers its contribution; the value is recalculated from database records.
 - View it in public pond status, pond details, and the officer analytics panel.
 
-**Interpretation:** PRI measures recorded work and verification progress. It does not measure water chemistry, ecological recovery, or whether water is safe to use. See the [complete formula and rules](docs/AUTOMATIC_ESCALATION.md).
+**Interpretation:** PRI measures recorded work and verification progress. It does not measure water chemistry, ecological recovery, or whether water is safe to use.
 
 ## Automatic email escalation
 
@@ -239,11 +239,11 @@ flowchart LR
 3. Log in as a real officer and open **Overview → Automatic deadline alerts → Authority email recipients and setup**.
 4. Save the Panchayat, higher-authority and inspection recipient addresses, then use **Send test email**.
 
-See [Email setup](docs/EMAIL_SETUP.md) for the full instructions. Passwords and private recipient configuration are not published in this repository.
+Passwords and private recipient configuration are not published in this repository.
 
 **Delivery behavior:** events and attempts persist in MySQL, missing configuration remains visible, and failed email sends retry with backoff. Demo accounts never send external emails. After downtime, the monitor catches up overdue stages; completed or inactive field tasks stop pending alerts. L4 sends an inspection request—it does not conduct an inspection.
 
-**Operational limits:** Java must remain running for timely checks, and email needs Internet access. `SENT` means the SMTP server accepted the message; it does not prove inbox arrival or acknowledgment. A process crash after SMTP acceptance but before the database update can cause a duplicate on retry. See [automatic escalation details](docs/AUTOMATIC_ESCALATION.md) for timing settings and delivery states.
+**Operational limits:** Java must remain running for timely checks, and email needs Internet access. `SENT` means the SMTP server accepted the message; it does not prove inbox arrival or acknowledgment. A process crash after SMTP acceptance but before the database update can cause a duplicate on retry.
 
 ## Quick start
 
@@ -306,7 +306,7 @@ Stop launcher-owned application processes with `stop-jalachaya.cmd`. MySQL remai
 | `AI_ENABLED`, `AI_SERVICE_URL`, `AI_BACKEND_URL` | AI integration switch and private service/image URLs |
 | `AI_TIMEOUT_MS`, `AI_POLL_MS` | AI request timeout and job polling interval |
 
-[backend/.env.example](backend/.env.example) is a reference file. Spring Boot does **not** automatically load it. Starting Java without launcher database settings uses persistent H2 under `backend/data/`; the normal launcher uses MySQL. See the [backend guide](backend/README.md) for manual setup.
+[backend/.env.example](backend/.env.example) is a reference file. Spring Boot does **not** automatically load it. Starting Java without launcher database settings uses persistent H2 under `backend/data/`; the normal launcher uses MySQL.
 
 ## Judge demonstration
 
@@ -368,7 +368,7 @@ pie showData
 
 This reused demonstration set is **not a held-out field benchmark** and does not establish product accuracy. Object boxes have not been independently annotated. The false positive occurred on a clean-looking scene despite a high model score. More labelled local pond photos are needed to assess field performance.
 
-The system does not measure water chemistry, sewage safety, smell, algae, or biological health. Visible pixel change or fewer detections cannot prove waste removal. See [sample evaluation](docs/AI_SAMPLE_EVALUATION.md), [raw results](docs/AI_SAMPLE_EVALUATION.json), and [AI integration](docs/AI_INTEGRATION.md).
+The system does not measure water chemistry, sewage safety, smell, algae, or biological health. Visible pixel change or fewer detections cannot prove waste removal. Advisory findings require human officer review.
 
 ## Verification and project statistics
 
@@ -401,7 +401,7 @@ Counts checked against the source on **23 October 2026**; they describe implemen
 | Backup/restore | Dump/file hashes checked; restore verified on a disposable MySQL instance with matching row counts |
 | Launcher recovery | Stale/reused PID safety, repeated starts, and frontend recovery verified |
 
-These are functional checks, not load-test or availability guarantees. Latest test counts above come from fresh runs; other entries summarize recorded local verification in [backend status](docs/BACKEND_STATUS.md).
+These are functional checks, not load-test or availability guarantees. Test counts reflect fresh automated test runs.
 
 ### Repeat checks
 
@@ -452,39 +452,29 @@ Jalachaya/
 ├── assets/                     Decorations and labelled sample photos
 ├── backend/
 │   ├── src/main/java/          Spring Boot API and application services
-│   ├── src/main/resources/    Configuration and Flyway V1–V10
+│   ├── src/main/resources/    Configuration and Flyway
 │   ├── src/test/java/          Integration tests
+│   ├── Dockerfile              Render / container build
 │   └── pom.xml                 Java dependencies and Maven build
 ├── ai-service/                 FastAPI app, model setup, evaluation, service tests
-├── docs/                       API contract, evaluation, phases, local operations
+├── render.yaml                 Render deployment blueprint
 ├── tests/                      Browser and launcher regression checks
 ├── start-jalachaya.cmd         Local entry point
 └── *-jalachaya.*, verify-*     Maintenance and verification tools
 ```
 
-## Current limits
+## Deployment
 
-- **Local deployment only:** HTTPS, public-domain hosting, production monitoring, and public deployment configuration are not set up.
-- **AI field accuracy remains unvalidated:** the small sample check is advisory evidence, not an environmental measurement or benchmark.
-- **Email requires private SMTP configuration:** automatic deadline escalation supports real email with delivery tracking and retries. Demo accounts use in-app alerts only. SMS is not implemented; password recovery uses the local operator command.
-- **Staff administration has no UI:** additional officer/worker setup uses bootstrap configuration.
-- **No known missing endpoints from the six-phase frontend contract:** empty lists and null progress values represent absent/applicable data, not hard-coded placeholder responses.
+### Local Development
+Double-click `start-jalachaya.cmd` or run `.\start-jalachaya.ps1` from PowerShell. This starts the MySQL database, Spring Boot backend on port 8080, FastAPI AI service on port 8000, and static frontend on port 5500.
 
-## Documentation
-
-| Guide | Contents |
-|---|---|
-| [Backend setup](backend/README.md) | Java startup, environment variables, MySQL, and endpoints |
-| [API contract](docs/API_CONTRACT.md) | Roles, enums, requests, response shapes, and visibility rules |
-| [Implementation phases](docs/BACKEND_PHASES.md) | Six-phase roadmap and atomic completion decision |
-| [Backend status](docs/BACKEND_STATUS.md) | Recorded verification and remaining limitations |
-| [Local operations](docs/LOCAL_OPERATIONS.md) | Startup, backup, restore, health, and recovery |
-| [Email setup](docs/EMAIL_SETUP.md) | Private Gmail SMTP sender configuration and test delivery |
-| [Automatic escalation and PRI](docs/AUTOMATIC_ESCALATION.md) | L1–L4 triggers, delivery retries, and the workflow index formula |
-| [AI service](ai-service/README.md) | Model setup and Python service behavior |
-| [AI integration](docs/AI_INTEGRATION.md) | Java/Python request and response contract |
-| [AI sample evaluation](docs/AI_SAMPLE_EVALUATION.md) | Labels, outcomes, and interpretation limits |
-| [Placeholder audit](docs/PLACEHOLDER_AUDIT.md) | Real data boundaries and unused reference sources |
+### Public Cloud (Render)
+This repository includes a native [render.yaml](render.yaml) blueprint and [backend/Dockerfile](backend/Dockerfile):
+1. In [Render](https://dashboard.render.com), click **New +** → **Blueprint**.
+2. Select your repository `anugrahks19/Jalachaya`.
+3. Render automatically provisions:
+   - **`jalachaya-backend`**: Dockerized Spring Boot Web Service (configured for Render free tier).
+   - **`jalachaya`**: Static Site for the citizen, officer, and worker portals.
 
 ---
 

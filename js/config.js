@@ -4,7 +4,10 @@ const CONFIG = {
   APP_NAME: 'JALACHAYA',
 
   USE_MOCK_BACKEND: false,
-  API_BASE_URL: 'http://localhost:8080',
+  // Automatic backend URL: uses localhost when developing, or your Render backend URL when hosted
+  API_BASE_URL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8080'
+    : (window.__JALACHAYA_API_URL__ || 'https://jalachaya-backend.onrender.com'),
 
   // Image upload rules (checked in the browser; the backend must check again)
   MAX_IMAGE_SIZE_MB: 5,
